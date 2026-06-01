@@ -1,359 +1,348 @@
-import {
-  Bike,
-  CreditCard,
-  Landmark,
-  Trash2,
-  Plus,
-  Minus,
-  CheckCircle2,
-} from "lucide-react";
-import { useState } from "react";
+import { Bike, Trash2, Plus, Minus, ShoppingBag, MapPin } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useCartStore } from "../../../store/cart.store";
+import { api } from "../../../shared/api";
+import { toast } from "react-hot-toast";
 
-type OrderType = "Delivery" | "Pickup";
-type PaymentMethod = "Bank_Transfer" | "Card_Payment";
+type OrderType = "DELIVERY" | "PICKUP";
+
+type DeliveryArea = {
+  name: string;
+  fee: number;
+};
+
+const DELIVERY_AREAS: DeliveryArea[] = [
+  { name: "Ogo-Oluwa", fee: 1000 },
+  { name: "Alekuwodo", fee: 1500 },
+  { name: "Testing Ground", fee: 1200 },
+  { name: "Old Garage", fee: 1500 },
+  { name: "Oke-Baale", fee: 1800 },
+  { name: "Powerline", fee: 2000 },
+];
 
 const Checkout = () => {
-  const [paymentMethod, setPaymentMethod] =
-    useState<PaymentMethod>("Bank_Transfer");
+  const {
+    items,
+    removeFromCart,
+    increaseQuantity,
+    decreaseQuantity,
+    getTotalPrice,
+    clearCart,
+  } = useCartStore();
 
-  const [orderType, setOrderType] = useState<OrderType>("Delivery");
+  const [loading, setLoading] = useState(false);
+  const [orderType, setOrderType] = useState<OrderType>("DELIVERY");
+  const [customerInfo, setCustomerInfo] = useState({
+    fullName: "",
+    phoneNumber: "",
+    address: "",
+    area: "",
+  });
 
-  // MOCK TOTAL
-  const subtotal = 6500;
-  const deliveryFee = orderType === "Delivery" ? 1000 : 0;
+  const subtotal = getTotalPrice();
+
+  const selectedArea = DELIVERY_AREAS.find(
+    (area) => area.name === customerInfo.area,
+  );
+
+  const deliveryFee = useMemo(() => {
+    if (orderType === "PICKUP") return 0;
+    return selectedArea?.fee ?? 0;
+  }, [orderType, selectedArea]);
+
   const total = subtotal + deliveryFee;
 
-  // HANDLE CARD PAYMENT
-  const handleCardCheckout = () => {
-    // Replace with your payment provider checkout page
-    window.location.href = "https://paystack.com/pay/noble-restaurant";
+  const handleChange = (field: string, value: string) => {
+    setCustomerInfo((prev) => ({ ...prev, [field]: value }));
   };
+
+  const validate = (): boolean => {
+    if (!customerInfo.fullName.trim()) {
+      toast.error("Please enter your full name");
+      return false;
+    }
+    if (!customerInfo.phoneNumber.trim()) {
+      toast.error("Please enter your phone number");
+      return false;
+    }
+    if (orderType === "DELIVERY") {
+      if (!customerInfo.address.trim()) {
+        toast.error("Please enter your delivery address");
+        return false;
+      }
+      if (!customerInfo.area) {
+        toast.error("Please select your delivery area");
+        return false;
+      }
+    }
+    if (items.length === 0) {
+      toast.error("Your cart is empty");
+      return false;
+    }
+    return true;
+  };
+
+  const handleCheckout = async () => {
+    if (!validate()) return;
+
+    try {
+      setLoading(true);
+
+      const payload = {
+        phoneNumber: customerInfo.phoneNumber,
+        deliveryType: orderType,
+        deliveryAddress:
+          orderType === "DELIVERY"
+            ? `${customerInfo.address}, ${customerInfo.area}`
+            : null,
+        items: items.map((item) => ({
+          foodId: item.id,
+          foodName: item.name,
+          quantity: item.quantity,
+          unitPrice: item.price,
+        })),
+      };
+
+      const res = await api.post("/order", payload);
+
+      // ── Monnify returns a hosted checkout URL ──────────────────────────────
+      // The user picks card or bank transfer inside Monnify's own checkout UI.
+      // We just redirect them there.
+      const { paymentLink } = res.data.data.data;
+
+      if (!paymentLink) {
+        // Fallback: no payment link means something went wrong server-side
+        toast.error("Could not initialise payment. Please try again.");
+        return;
+      }
+
+      // Clear cart before leaving — Monnify will redirect back to your
+      // callback URL (configured in Monnify dashboard) after payment.
+      clearCart();
+
+      // Redirect to Monnify hosted checkout page.
+      // User sees card / bank transfer / USSD options there.
+      window.location.href = paymentLink;
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ?? "Unable to place order. Try again.";
+      toast.error(message);
+      console.error("Checkout error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isCartEmpty = items.length === 0;
 
   return (
     <section className="bg-[#F7F3ED] min-h-screen py-16 px-5">
       <div className="max-w-6xl mx-auto">
-        {/* PAGE HEADER */}
-        <header className="mb-12 text-center">
-          <h1 className="font-[Playfair_Display] text-4xl md:text-5xl font-bold text-gray-900">
-            Complete Your Order
-          </h1>
-
-          <p className="mt-4 text-gray-500">
-            Just a few more steps to enjoy Noble Restaurant’s finest cuisine.
+        {/* Header */}
+        <header className="text-center mb-12">
+          <h1 className="font-bold text-4xl">Complete Your Order</h1>
+          <p className="text-gray-500 mt-3">
+            Review your items, fill in your details, then pay securely via
+            Monnify.
           </p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* LEFT CONTENT */}
+        <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            {/* CART */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold mb-6">Review Your Cart</h2>
-
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 border rounded-2xl p-4">
-                <div className="flex items-center gap-4">
-                  <img
-                    src="https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=400"
-                    alt="Signature Jollof Rice"
-                    className="w-20 h-20 rounded-xl object-cover"
-                  />
-
-                  <div>
-                    <h3 className="font-semibold">Signature Jollof</h3>
-
-                    <p className="text-red-600 font-medium mt-1">₦6,500</p>
-
-                    {/* QUANTITY */}
-                    <div className="flex items-center gap-3 mt-4">
-                      <button className="w-8 h-8 rounded-lg border flex items-center justify-center hover:border-red-500 transition">
-                        <Minus size={16} />
-                      </button>
-
-                      <span>1</span>
-
-                      <button className="w-8 h-8 rounded-lg border flex items-center justify-center hover:border-red-500 transition">
-                        <Plus size={16} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <button className="text-red-500 hover:text-red-700 transition">
-                  <Trash2 size={20} />
-                </button>
-              </div>
-            </div>
-
-            {/* CONTACT */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold mb-6">
-                Contact Information
+            {/* ── CART ────────────────────────────────────────────────────── */}
+            <div className="bg-white rounded-3xl p-6">
+              <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+                <ShoppingBag size={22} className="text-red-500" />
+                Review Cart
               </h2>
 
-              <div className="space-y-5">
+              {isCartEmpty ? (
+                <div className="text-center py-10 text-gray-400">
+                  Your cart is empty
+                </div>
+              ) : (
+                items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="border rounded-xl p-4 mb-4 flex justify-between items-start"
+                  >
+                    <div>
+                      <h3 className="font-medium">{item.name}</h3>
+                      <p className="text-red-500 mt-1">
+                        ₦{item.price.toLocaleString()}
+                      </p>
+                      <div className="flex items-center gap-3 mt-3">
+                        <button
+                          onClick={() => decreaseQuantity(item.id)}
+                          className="w-7 h-7 rounded-full border flex items-center justify-center hover:bg-gray-50 transition"
+                          aria-label="Decrease quantity"
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span className="font-medium w-4 text-center">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => increaseQuantity(item.id)}
+                          className="w-7 h-7 rounded-full border flex items-center justify-center hover:bg-gray-50 transition"
+                          aria-label="Increase quantity"
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeFromCart(item.id)}
+                      className="text-red-400 hover:text-red-600 transition"
+                      aria-label={`Remove ${item.name}`}
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* ── CUSTOMER INFO ────────────────────────────────────────────── */}
+            <div className="bg-white rounded-3xl p-6">
+              <h2 className="text-2xl mb-6">Customer Information</h2>
+              <div className="space-y-4">
                 <input
+                  placeholder="Full name"
+                  value={customerInfo.fullName}
+                  onChange={(e) => handleChange("fullName", e.target.value)}
+                  className="w-full border rounded-xl p-4 focus:outline-none focus:border-red-400 transition"
+                />
+                <input
+                  placeholder="Phone number"
                   type="tel"
-                  placeholder="+234xxxxxxxxxx"
-                  className="w-full border rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-red-500"
-                />
-
-                <input
-                  type="text"
-                  placeholder="Delivery Address"
-                  className="w-full border rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  value={customerInfo.phoneNumber}
+                  onChange={(e) => handleChange("phoneNumber", e.target.value)}
+                  className="w-full border rounded-xl p-4 focus:outline-none focus:border-red-400 transition"
                 />
               </div>
             </div>
 
-            {/* ORDER TYPE */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold mb-6">Order Type</h2>
+            {/* ── ORDER TYPE & DELIVERY ─────────────────────────────────────── */}
+            <div className="bg-white rounded-3xl p-6">
+              <h2 className="text-xl mb-5 flex items-center gap-2">
+                <Bike size={20} className="text-red-500" />
+                Order Type
+              </h2>
 
-              <div className="space-y-4">
-                {/* DELIVERY */}
-                <button
-                  onClick={() => setOrderType("Delivery")}
-                  className={`w-full border-2 rounded-2xl p-5 text-left transition ${
-                    orderType === "Delivery"
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-200 hover:border-red-300"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                      <Bike
-                        className={
-                          orderType === "Delivery"
-                            ? "text-red-500"
-                            : "text-gray-500"
-                        }
-                      />
-
-                      <div>
-                        <h3 className="font-semibold text-lg">Delivery</h3>
-
-                        <p className="text-gray-500 mt-1">
-                          Delivered within Osogbo
-                        </p>
-
-                        <p className="text-red-500 mt-2 font-medium">
-                          Delivery Fee: ₦1,000
-                        </p>
-                      </div>
-                    </div>
-
-                    {orderType === "Delivery" && (
-                      <CheckCircle2 className="text-red-500" />
-                    )}
-                  </div>
-                </button>
-
-                {/* PICKUP */}
-                <button
-                  onClick={() => setOrderType("Pickup")}
-                  className={`w-full border-2 rounded-2xl p-5 text-left transition ${
-                    orderType === "Pickup"
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-200 hover:border-red-300"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                      <Bike
-                        className={
-                          orderType === "Pickup"
-                            ? "text-red-500"
-                            : "text-green-500"
-                        }
-                      />
-
-                      <div>
-                        <h3 className="font-semibold text-lg">Pickup</h3>
-
-                        <p className="text-gray-500 mt-1">
-                          Pick up at restaurant
-                        </p>
-
-                        <p className="text-green-600 mt-2 font-medium">
-                          Ready in 30 minutes
-                        </p>
-                      </div>
-                    </div>
-
-                    {orderType === "Pickup" && (
-                      <CheckCircle2 className="text-red-500" />
-                    )}
-                  </div>
-                </button>
+              {/* Toggle: Delivery vs Pickup */}
+              <div className="grid grid-cols-2 gap-3 mb-5">
+                {(["DELIVERY", "PICKUP"] as OrderType[]).map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setOrderType(type)}
+                    className={`border rounded-xl p-3 text-sm font-medium transition ${
+                      orderType === type
+                        ? "border-red-500 bg-red-50 text-red-600"
+                        : "border-gray-200 text-gray-500 hover:border-gray-300"
+                    }`}
+                  >
+                    {type === "DELIVERY" ? "🛵 Delivery" : "🏪 Pickup"}
+                  </button>
+                ))}
               </div>
+
+              {orderType === "DELIVERY" && (
+                <div className="space-y-4">
+                  <div className="relative">
+                    <MapPin
+                      size={16}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                    />
+                    <input
+                      placeholder="Street address"
+                      value={customerInfo.address}
+                      onChange={(e) => handleChange("address", e.target.value)}
+                      className="w-full border rounded-xl p-4 pl-10 focus:outline-none focus:border-red-400 transition"
+                    />
+                  </div>
+
+                  <select
+                    value={customerInfo.area}
+                    onChange={(e) => handleChange("area", e.target.value)}
+                    className="w-full border rounded-xl p-4 text-sm focus:outline-none focus:border-red-400 transition"
+                  >
+                    <option value="">Select nearest area</option>
+                    {DELIVERY_AREAS.map((area) => (
+                      <option key={area.name} value={area.name}>
+                        {area.name} — ₦{area.fee.toLocaleString()}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
-            {/* PAYMENT */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold mb-6">Payment Method</h2>
-
-              <div className="space-y-4">
-                {/* BANK TRANSFER */}
-                <button
-                  onClick={() => setPaymentMethod("Bank_Transfer")}
-                  className={`w-full border-2 rounded-2xl p-5 text-left transition ${
-                    paymentMethod === "Bank_Transfer"
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-200 hover:border-red-300"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                      <Landmark
-                        className={
-                          paymentMethod === "Bank_Transfer"
-                            ? "text-red-500"
-                            : "text-gray-500"
-                        }
-                      />
-
-                      <div>
-                        <h3 className="font-semibold text-lg">Bank Transfer</h3>
-
-                        <p className="text-gray-500 mt-1">
-                          Transfer before delivery
-                        </p>
-                      </div>
-                    </div>
-
-                    {paymentMethod === "Bank_Transfer" && (
-                      <CheckCircle2 className="text-red-500" />
-                    )}
-                  </div>
-                </button>
-
-                {/* BANK DETAILS */}
-                {paymentMethod === "Bank_Transfer" && (
-                  <div className="border-2 border-red-200 bg-red-50 rounded-2xl p-6 animate-in fade-in duration-300">
-                    <h3 className="text-lg font-semibold mb-5">
-                      Bank Account Details
-                    </h3>
-
-                    <div className="space-y-4">
-                      <div className="bg-white rounded-xl p-4">
-                        <p className="text-sm text-gray-500">Bank Name</p>
-
-                        <p className="font-semibold mt-1">Moniepoint</p>
-                      </div>
-
-                      <div className="bg-white rounded-xl p-4">
-                        <p className="text-sm text-gray-500">Account Number</p>
-
-                        <p className="font-semibold mt-1">8282557112</p>
-                      </div>
-
-                      <div className="bg-white rounded-xl p-4">
-                        <p className="text-sm text-gray-500">Account Name</p>
-
-                        <p className="font-semibold mt-1">Noble Restaurant</p>
-                      </div>
-
-                      <div className="bg-white rounded-xl p-4">
-                        <p className="text-sm text-gray-500">
-                          Amount To Transfer
-                        </p>
-
-                        <p className="font-bold text-red-600 mt-1">
-                          ₦{total.toLocaleString()}
-                        </p>
-                      </div>
-
-                      <input
-                        type="text"
-                        placeholder="Transaction Reference (Optional)"
-                        className="w-full border rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-red-500"
-                      />
-
-                      <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-                        <p className="text-sm text-yellow-800">
-                          Important: Complete the transfer before placing your
-                          order.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* CARD PAYMENT */}
-                <button
-                  onClick={() => {
-                    setPaymentMethod("Card_Payment");
-                    handleCardCheckout();
-                  }}
-                  className={`w-full border-2 rounded-2xl p-5 text-left transition ${
-                    paymentMethod === "Card_Payment"
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-200 hover:border-red-300"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                      <CreditCard
-                        className={
-                          paymentMethod === "Card_Payment"
-                            ? "text-red-500"
-                            : "text-blue-500"
-                        }
-                      />
-
-                      <div>
-                        <h3 className="font-semibold text-lg">Card Payment</h3>
-
-                        <p className="text-gray-500 mt-1">
-                          Secure debit card payment
-                        </p>
-                      </div>
-                    </div>
-
-                    {paymentMethod === "Card_Payment" && (
-                      <CheckCircle2 className="text-red-500" />
-                    )}
-                  </div>
-                </button>
-              </div>
+            {/* ── PAYMENT NOTE ─────────────────────────────────────────────── */}
+            <div className="bg-white rounded-3xl p-6 border border-dashed border-gray-200">
+              <p className="text-sm text-gray-500 leading-relaxed">
+                <span className="font-medium text-gray-700">
+                  Secure payment via Monnify.
+                </span>{" "}
+                After placing your order you will be redirected to Monnify's
+                checkout page where you can pay with your debit card, bank
+                transfer, USSD, or phone number.
+              </p>
             </div>
           </div>
 
-          {/* ORDER SUMMARY */}
-          <aside className="lg:sticky lg:top-24 h-fit">
-            <div className="bg-white rounded-3xl p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold mb-6">Order Summary</h2>
+          {/* ── ORDER SUMMARY ─────────────────────────────────────────────── */}
+          <aside className="bg-white rounded-3xl p-6 h-fit sticky top-8">
+            <h2 className="text-2xl mb-6">Order Summary</h2>
 
-              <div className="space-y-4 text-gray-600">
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span>₦{subtotal.toLocaleString()}</span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span>Delivery Fee</span>
-                  <span>₦{deliveryFee.toLocaleString()}</span>
-                </div>
-
-                <div className="border-t pt-4 flex justify-between text-xl font-bold text-gray-900">
-                  <span>Total</span>
-
-                  <span className="text-red-600">
-                    ₦{total.toLocaleString()}
+            {/* Item lines */}
+            <div className="space-y-2 mb-4">
+              {items.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex justify-between text-sm text-gray-600"
+                >
+                  <span>
+                    {item.name}{" "}
+                    <span className="text-gray-400">×{item.quantity}</span>
                   </span>
+                  <span>₦{(item.price * item.quantity).toLocaleString()}</span>
                 </div>
-              </div>
-
-              {/* CTA */}
-              <button className="w-full mt-8 bg-red-600 hover:bg-red-700 transition text-white py-4 rounded-2xl font-semibold text-lg">
-                Place Order →
-              </button>
-
-              {/* TRUST */}
-              <p className="text-center text-xs text-gray-400 mt-4">
-                Secure checkout • Fast delivery • Trusted restaurant
-              </p>
+              ))}
             </div>
+
+            <div className="space-y-3 border-t pt-4">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Subtotal</span>
+                <span>₦{subtotal.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Delivery</span>
+                <span>
+                  {orderType === "PICKUP"
+                    ? "Free (Pickup)"
+                    : deliveryFee > 0
+                      ? `₦${deliveryFee.toLocaleString()}`
+                      : "Select area"}
+                </span>
+              </div>
+              <div className="flex justify-between border-t pt-4 font-bold text-lg">
+                <span>Total</span>
+                <span>₦{total.toLocaleString()}</span>
+              </div>
+            </div>
+
+            <button
+              disabled={loading || isCartEmpty}
+              onClick={handleCheckout}
+              className="w-full mt-6 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white p-4 rounded-xl font-semibold transition-colors duration-200"
+            >
+              {loading ? "Processing..." : "Place Order & Pay"}
+            </button>
+
+            <p className="text-xs text-center text-gray-400 mt-3">
+              You'll be redirected to Monnify to complete payment
+            </p>
           </aside>
         </div>
       </div>

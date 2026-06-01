@@ -34,7 +34,7 @@ const Footer = () => {
             </a>
 
             <a
-              href="#"
+              href="https://www.instagram.com/noblerestaurantng/"
               aria-label="Instagram"
               className="bg-white p-3 rounded-full shadow-sm hover:bg-red-600 hover:text-white transition"
             >
@@ -113,16 +113,22 @@ const Footer = () => {
               >
                 +234 706 104 8562
               </a>
+              <a
+                href="tel:+2349159002340"
+                className="hover:text-red-600 transition"
+              >
+                +234 915 900 2340
+              </a>
             </div>
 
             <div className="flex items-center gap-3">
               <Mail className="text-red-600" size={18} />
 
               <a
-                href="mailto:noblerestaurant@gmail.com"
+                href="mailto:noblerestaurant5@gmail.com"
                 className="hover:text-red-600 transition"
               >
-                noblerestaurant@gmail.com
+                noblerestaurant5@gmail.com
               </a>
             </div>
           </div>
@@ -141,7 +147,7 @@ const Footer = () => {
               <div>
                 <p className="font-medium text-gray-800">Monday - Sunday</p>
 
-                <p className="mt-1">09:00 AM - 11:00 PM</p>
+                <p className="mt-1">09:00 AM - 10:30 PM</p>
               </div>
             </div>
 

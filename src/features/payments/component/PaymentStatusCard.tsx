@@ -3,11 +3,11 @@ import successImage from "../../../assets/noble-restaurant-order-success.png";
 import failedImage from "../../../assets/noble-restaurant-order-error.png";
 import { CheckCircle2, XCircle, Clock3 } from "lucide-react";
 
-type OrderItem = {
-  name: string;
-  quantity: number;
-  price: number;
-};
+// type OrderItem = {
+//   name: string;
+//   quantity: number;
+//   price: number;
+// };
 
 // ✅ aligned with VerifyPayment's PaymentState
 type PaymentStatus = "success" | "failed" | "pending";
@@ -16,7 +16,7 @@ type Props = {
   status: PaymentStatus;
   orderId: string;
   customer: { phone: string; address: string };
-  items: OrderItem[];
+  // items: OrderItem[];
   subtotal: number;
   deliveryFee: number;
   total: number;
@@ -30,7 +30,7 @@ const PaymentStatusCard = ({
   status,
   orderId,
   customer,
-  items,
+  // items,
   subtotal,
   deliveryFee,
   total,
@@ -39,7 +39,9 @@ const PaymentStatusCard = ({
   onPrimaryAction,
   onSecondaryAction,
 }: Props) => {
-  const statusConfig = {
+  type PaymentStatus = "success" | "failed" | "pending";
+
+  const statusConfig: Record<PaymentStatus, any> = {
     success: {
       image: successImage,
       title: "Order Placed Successfully!",
@@ -47,7 +49,7 @@ const PaymentStatusCard = ({
       color: "text-green-600",
       border: "border-green-200",
       bg: "bg-green-50",
-      icon: <CheckCircle2 size={28} />, // ✅ added missing icon
+      icon: <CheckCircle2 size={28} />,
       primaryBtn: "Browse Menu Again",
       secondaryBtn: "Back To Home",
     },
@@ -64,8 +66,8 @@ const PaymentStatusCard = ({
     },
     pending: {
       image: successImage,
-      title: "Payment Verification Pending",
-      subtitle: "We are currently verifying your transfer",
+      title: "Payment Pending",
+      subtitle: "We are confirming your payment",
       color: "text-yellow-600",
       border: "border-yellow-200",
       bg: "bg-yellow-50",
@@ -134,7 +136,7 @@ const PaymentStatusCard = ({
           <div>
             <h2 className="text-2xl font-semibold">Order Items</h2>
             <div className="mt-5 space-y-5">
-              {items.map((item, index) => (
+              {/* {items.map((item, index) => (
                 <div key={index} className="flex justify-between items-start">
                   <div>
                     <h3 className="font-medium text-lg">{item.name}</h3>
@@ -146,7 +148,7 @@ const PaymentStatusCard = ({
                     ₦{item.price.toLocaleString()}
                   </p>
                 </div>
-              ))}
+              ))} */}
             </div>
           </div>
 

@@ -1,5 +1,6 @@
 import { CalendarDays, Clock3, PhoneCall } from "lucide-react";
-import ReservationForm from "../components/ReservationForm";
+
+import { Link } from "react-router-dom";
 
 const Reservation = () => {
   return (
@@ -80,7 +81,28 @@ const Reservation = () => {
         </div>
 
         {/* RESERVATION FORM */}
-        <ReservationForm />
+        {/* <ReservationForm /> */}
+
+        {/* RESERVATION BUTTON */}
+        <Link
+          to="/reservation"
+          className="
+                  hidden
+                  md:flex
+                  items-center
+                  justify-center
+                  bg-red-600
+                  hover:bg-red-700
+                  text-white
+                  px-5
+                  py-3
+                  rounded-xl
+                  font-medium
+                  transition
+                "
+        >
+          Reserve a Table
+        </Link>
       </div>
     </section>
   );

@@ -1,24 +1,63 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+
 import HomePage from "./features/home/pages/HomePage";
 import Layout from "./shared/layout/Layout";
 import MenuPage from "./features/menu/pages/MenuPage";
 import CheckOut from "./features/checkout/pages/CheckOut";
-import Cart from "./features/cart/pages/Cart";
 import VerifyPayment from "./features/payments/pages/verifyPayment";
+import AboutPage from "./features/home/pages/AboutPage";
+import ContactUsPage from "./features/home/pages/ContactPage";
+import AdminLayout from "./features/admin/pages/AdminLayout";
+import Categories from "./features/admin/pages/Categories";
+import Products from "./features/admin/pages/Product";
+import Dashboard from "./features/admin/pages/Dashboard";
+import ReservationPage from "./features/reservation/ReservationPage";
+import NewProduct from "./features/admin/pages/NewProduct";
+import CreateCategory from "./features/admin/pages/CreateCategory";
+import VerifyPayments from "./features/admin/pages/VerifyPayment";
+import Reservation from "./features/admin/pages/Reservation";
+import Orders from "./features/admin/pages/Orders";
 
 function App() {
   return (
     <BrowserRouter>
+      <Toaster
+        position="top-right"
+        reverseOrder={false}
+        toastOptions={{
+          duration: 3000,
+          style: {
+            borderRadius: "12px",
+            padding: "16px",
+          },
+        }}
+      />
+
       <Routes>
-        <Route element={<Layout />} path="/">
-          <Route element={<HomePage />} index />
-          <Route element={<MenuPage />} path="/contact" />
-          <Route element={<MenuPage />} path="/about" />
-          <Route element={<MenuPage />} path="/menu" />
-          <Route element={<CheckOut />} path="/checkout" />
-          <Route element={<VerifyPayment />} path="/verifypayment" />
-          <Route element={<Cart />} path="/cart" />
-          <Route element={<CheckOut />} path="/reservation" />
+        {/* PUBLIC ROUTES */}
+        <Route path="/" element={<Layout />}>
+          <Route index element={<HomePage />} />
+          <Route path="contact" element={<ContactUsPage />} />
+          <Route path="about" element={<AboutPage />} />
+          <Route path="menu" element={<MenuPage />} />
+          <Route path="checkout" element={<CheckOut />} />
+          <Route path="payment/success" element={<VerifyPayment />} />
+          <Route path="reservation" element={<ReservationPage />} />
+        </Route>
+
+        {/* ADMIN ROUTES */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="categories" element={<Categories />} />
+          <Route path="categories/new" element={<CreateCategory />} />
+          <Route path="products" element={<Products />} />
+          <Route path="product/new" element={<NewProduct />} />
+          <Route path="orders" element={<Orders />} />
+          <Route path="reservations" element={<Reservation />} />
+          <Route path="payments" element={<VerifyPayments />} />
+          <Route path="settings" element={<CheckOut />} />
+          <Route path="promotions" element={<CheckOut />} />
         </Route>
       </Routes>
     </BrowserRouter>

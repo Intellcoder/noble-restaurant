@@ -1,104 +1,86 @@
-// pages/VerifyPayment.tsx
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PaymentStatusCard from "../component/PaymentStatusCard";
+import { api } from "../../../shared/api";
 
-type PaymentState = "loading" | "success" | "failed" | "pending";
+type PaymentStatus = "loading" | "success" | "failed" | "pending";
 
-interface PaymentVerificationResponse {
-  success: boolean;
-  paymentStatus: "PAID" | "FAILED" | "PENDING";
-  orderId: string;
-  customer: {
-    phone: string;
-    address: string;
-  };
-  items: {
-    name: string;
-    quantity: number;
-    price: number;
-  }[];
+type Order = {
+  id: string;
+  orderNumber: string;
+  phoneNumber: string;
+  deliveryAddress: string;
+  deliveryType: string;
   subtotal: number;
   deliveryFee: number;
-  total: number;
-  paymentMethod: string;
-}
+  totalAmount: number;
+  paymentStatus: "PAID" | "FAILED" | "PENDING";
+  orderStatus: string;
+};
+
+// type ApiResponse = {
+//   success: boolean;
+//   message: string;
+//   data: Order;
+// };
 
 const VerifyPayment = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const reference = new URLSearchParams(location.search).get("reference");
+  const paymentReference = new URLSearchParams(location.search).get(
+    "paymentReference",
+  );
 
-  const [paymentState, setPaymentState] = useState<PaymentState>("loading");
-  const [pageError, setPageError] = useState("");
-  const [orderData, setOrderData] =
-    useState<PaymentVerificationResponse | null>(null);
+  const [status, setStatus] = useState<PaymentStatus>("loading");
+  const [error, setError] = useState("");
+  const [orderData, setOrderData] = useState<Order | null>(null);
 
   useEffect(() => {
-    if (!reference) {
-      setPaymentState("failed");
-      setPageError("No payment reference found. Please try again.");
+    if (!paymentReference) {
+      setStatus("failed");
+      setError("Missing payment reference");
       return;
     }
 
-    const controller = new AbortController();
-
     const verifyPayment = async () => {
       try {
-        // ✅ simulate real network delay so loading state is actually visible
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+        setStatus("loading");
 
-        // const res = await axios.get(`/api/payments/verify/${reference}`, {
-        //   signal: controller.signal,
-        // });
-        // const data: PaymentVerificationResponse = res.data;
+        const res = await api.get(`/order/verify-payment/${paymentReference}`);
 
-        const data: PaymentVerificationResponse = {
-          success: true,
-          paymentStatus: "PAID",
-          orderId: "NR-20394",
-          customer: { phone: "090876543232", address: "OWODE EDE" },
-          items: [{ name: "Signature Jollof", quantity: 1, price: 6500 }],
-          subtotal: 6500,
-          deliveryFee: 1000,
-          total: 7500,
-          paymentMethod: "Bank Transfer",
-        };
+        const { success, message, data } = res.data;
 
-        if (controller.signal.aborted) return;
-
-        if (data.success && data.paymentStatus === "PAID") {
-          // ✅ set orderData BEFORE paymentState so data is ready when card renders
-          setOrderData(data);
-          setPaymentState("success");
-        } else if (data.paymentStatus === "PENDING") {
-          setOrderData(data);
-          setPaymentState("pending");
-        } else {
-          setPaymentState("failed");
-          setPageError("Payment could not be verified.");
+        console.log("API response:", res.data.data);
+        console.log("message:", message);
+        const resData = data.data;
+        if (!success) {
+          setStatus("failed");
+          setError(message || "Payment verification failed");
+          return;
         }
-      } catch (error) {
-        if (controller.signal.aborted) return;
 
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Something went wrong while verifying payment.";
+        setOrderData(resData);
 
-        setPaymentState("failed");
-        setPageError(message);
+        if (resData.paymentStatus === "PAID") {
+          setStatus("success");
+        } else if (resData.paymentStatus === "PENDING") {
+          setStatus("pending");
+        } else {
+          setStatus("failed");
+        }
+      } catch (err: any) {
+        setStatus("failed");
+        setError(
+          err?.response?.data?.message || err.message || "Something went wrong",
+        );
       }
     };
 
     verifyPayment();
+  }, [paymentReference]);
 
-    return () => controller.abort();
-  }, [reference]);
-
-  // ✅ loading renders correctly now — visible for the duration of the delay
-  if (paymentState === "loading") {
+  if (status === "loading") {
     return (
       <section className="min-h-screen flex items-center justify-center bg-[#F7F3ED]">
         <div className="text-center">
@@ -112,20 +94,23 @@ const VerifyPayment = () => {
     );
   }
 
+  console.log("orders", orderData);
   return (
     <PaymentStatusCard
-      status={paymentState}
-      orderId={orderData?.orderId ?? "—"}
-      customer={orderData?.customer ?? { phone: "—", address: "—" }}
-      items={orderData?.items ?? []}
+      status={status}
+      orderId={orderData?.orderNumber ?? "—"}
+      customer={{
+        phone: orderData?.phoneNumber ?? "—",
+        address: orderData?.deliveryAddress ?? "—",
+      }}
       subtotal={orderData?.subtotal ?? 0}
       deliveryFee={orderData?.deliveryFee ?? 0}
-      total={orderData?.total ?? 0}
-      paymentMethod={orderData?.paymentMethod ?? "—"}
-      errorMessage={paymentState === "failed" ? pageError : undefined}
-      onPrimaryAction={() => {
-        navigate(paymentState === "success" ? "/menu" : "/checkout");
-      }}
+      total={orderData?.totalAmount ?? 0}
+      paymentMethod="Monnify"
+      errorMessage={status === "failed" ? error : undefined}
+      onPrimaryAction={() =>
+        navigate(status === "success" ? "/menu" : "/checkout")
+      }
       onSecondaryAction={() => navigate("/")}
     />
   );

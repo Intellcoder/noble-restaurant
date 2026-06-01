@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import hero1 from "../../../assets/nick-karvounis-Ciqxn7FE4vE-unsplash.jpg";
 import hero2 from "../../../assets/patrick-tomasso-GXXYkSwndP4-unsplash.jpg";
 import hero3 from "../../../assets/jason-leung-poI7DelFiVA-unsplash.jpg";
+import { Link } from "react-router-dom";
 
 const slides = [
   {
@@ -68,13 +69,17 @@ const HeroSection = () => {
 
         {/* CTA BUTTONS */}
         <div className="mt-6 flex gap-4">
-          <button className="bg-red-600 text-white px-6 py-3 rounded-md hover:bg-red-700 transition">
-            Order Now
-          </button>
+          <Link to={"/menu"}>
+            <button className="bg-red-600 text-white px-6 py-3 rounded-md hover:bg-red-700 transition">
+              Order Now
+            </button>
+          </Link>
 
-          <button className="bg-white text-black px-6 py-3 rounded-md hover:bg-gray-200 transition">
-            View Menu
-          </button>
+          <Link to={"/menu"}>
+            <button className="bg-white text-black px-6 py-3 rounded-md hover:bg-gray-200 transition">
+              View Menu
+            </button>
+          </Link>
         </div>
       </div>
 

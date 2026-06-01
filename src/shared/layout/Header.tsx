@@ -1,94 +1,259 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import logo from "../../assets/noble-restaurant-logo-osogbo.png";
+
 import { ShoppingCart, Menu, X } from "lucide-react";
 
+import logo from "../../assets/noble-restaurant-logo-osogbo.png";
+
+import Cart from "../../features/cart/pages/Cart";
+
+import { useCartStore } from "../../store/cart.store";
+
 const Header = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const [cartOpen, setCartOpen] = useState(false);
+
+  const { getTotalItems } = useCartStore();
+
+  const totalItems = getTotalItems();
 
   const navLinks = [
-    { name: "Home", path: "/" },
-    { name: "Menu", path: "/menu" },
-    { name: "About Us", path: "/about" },
-    { name: "Contact Us", path: "/contact" },
+    {
+      name: "Home",
+      path: "/",
+    },
+    {
+      name: "Menu",
+      path: "/menu",
+    },
+    {
+      name: "About",
+      path: "/about",
+    },
+    {
+      name: "Contact",
+      path: "/contact",
+    },
   ];
 
   return (
-    <header
-      className="sticky top-0 z-50 bg-white shadow-sm"
-      aria-label="Main navigation header"
-    >
-      <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-        {/* Logo (SEO: alt includes brand + location) */}
-        <Link to="/" className="flex items-center">
-          <img
-            src={logo}
-            alt="Noble Restaurant Osogbo Nigerian Food Logo"
-            className="h-12 w-auto"
-          />
-        </Link>
+    <>
+      {/* HEADER */}
+      <header
+        className="
+          sticky 
+          top-0 
+          z-50 
+          bg-white/95 
+          backdrop-blur-md 
+          border-b
+        "
+        aria-label="Main navigation"
+      >
+        <div className="max-w-7xl mx-auto px-4 lg:px-6">
+          <div className="flex items-center justify-between h-20">
+            {/* LOGO */}
+            <Link to="/" className="flex items-center gap-3 shrink-0">
+              <img
+                src={logo}
+                alt="Noble Restaurant Osogbo Logo"
+                className="h-12 w-auto object-contain"
+              />
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex gap-8 text-gray-700 font-medium">
-          {navLinks.map((link) => (
-            <NavLink
-              key={link.path}
-              to={link.path}
-              className={({ isActive }) =>
-                isActive
-                  ? "text-red-600 font-semibold"
-                  : "hover:text-red-500 transition"
-              }
+              {/* OPTIONAL TEXT */}
+              {/* <div className="hidden sm:block">
+                <h1 className="text-sm font-bold text-gray-900 leading-tight">
+                  Noble Restaurant
+                </h1>
+
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <MapPin size={12} />
+
+                  <span>Osogbo, Nigeria</span>
+                </div>
+              </div> */}
+            </Link>
+
+            {/* DESKTOP NAVIGATION */}
+            <nav
+              className="
+                hidden 
+                md:flex 
+                items-center 
+                gap-8
+              "
             >
-              {link.name}
-            </NavLink>
-          ))}
-        </nav>
+              {navLinks.map((link) => (
+                <NavLink
+                  key={link.path}
+                  to={link.path}
+                  className={({ isActive }) =>
+                    `
+                    relative
+                    font-medium
+                    transition
+                    hover:text-red-600
+                    ${isActive ? "text-red-600" : "text-gray-700"}
+                  `
+                  }
+                >
+                  {link.name}
+                </NavLink>
+              ))}
+            </nav>
 
-        {/* Right Actions */}
-        <div className="flex items-center gap-4">
-          <button aria-label="View cart" className="relative p-2">
-            <ShoppingCart />
-            <span className="absolute -top-1 -right-1 text-xs bg-red-600 text-white rounded-full px-1">
-              0
-            </span>
-          </button>
+            {/* RIGHT ACTIONS */}
+            <div className="flex items-center gap-3">
+              {/* CART BUTTON */}
+              <button
+                onClick={() => setCartOpen(true)}
+                aria-label="Open shopping cart"
+                className="
+                  relative
+                  w-11
+                  h-11
+                  rounded-full
+                  border
+                  flex
+                  items-center
+                  justify-center
+                  hover:bg-red-50
+                  transition
+                "
+              >
+                <ShoppingCart size={20} className="text-gray-700" />
 
-          <button className="hidden md:block bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition">
-            Reserve a Table
-          </button>
+                {totalItems > 0 && (
+                  <span
+                    className="
+                      absolute
+                      -top-1
+                      -right-1
+                      min-w-[20px]
+                      h-5
+                      px-1
+                      rounded-full
+                      bg-red-600
+                      text-white
+                      text-xs
+                      flex
+                      items-center
+                      justify-center
+                      font-medium
+                    "
+                  >
+                    {totalItems}
+                  </span>
+                )}
+              </button>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden"
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle menu"
-          >
-            {isOpen ? <X /> : <Menu />}
-          </button>
+              {/* RESERVATION BUTTON */}
+              <Link
+                to="/reservation"
+                className="
+                  hidden
+                  md:flex
+                  items-center
+                  justify-center
+                  bg-red-600
+                  hover:bg-red-700
+                  text-white
+                  px-5
+                  py-3
+                  rounded-xl
+                  font-medium
+                  transition
+                "
+              >
+                Reserve a Table
+              </Link>
+
+              {/* MOBILE MENU BUTTON */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label="Toggle mobile menu"
+                className="
+                  md:hidden
+                  w-11
+                  h-11
+                  rounded-full
+                  border
+                  flex
+                  items-center
+                  justify-center
+                "
+              >
+                {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Mobile Navigation */}
-      {isOpen && (
-        <nav className="md:hidden bg-white border-t px-4 py-4 space-y-4">
-          {navLinks.map((link) => (
-            <NavLink
-              key={link.path}
-              to={link.path}
-              onClick={() => setIsOpen(false)}
-              className="block text-gray-700 hover:text-red-500"
-            >
-              {link.name}
-            </NavLink>
-          ))}
+        {/* MOBILE MENU */}
+        {mobileMenuOpen && (
+          <div
+            className="
+              md:hidden
+              border-t
+              bg-white
+              animate-in
+              slide-in-from-top
+            "
+          >
+            <nav className="px-5 py-5 space-y-2">
+              {navLinks.map((link) => (
+                <NavLink
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `
+                    block
+                    px-4
+                    py-3
+                    rounded-xl
+                    transition
+                    ${
+                      isActive
+                        ? "bg-red-50 text-red-600 font-semibold"
+                        : "text-gray-700 hover:bg-gray-50"
+                    }
+                  `
+                  }
+                >
+                  {link.name}
+                </NavLink>
+              ))}
 
-          <button className="w-full bg-red-600 text-white py-2 rounded-md">
-            Reserve a Table
-          </button>
-        </nav>
-      )}
-    </header>
+              {/* MOBILE CTA */}
+              <Link
+                to="/reservation"
+                onClick={() => setMobileMenuOpen(false)}
+                className="
+                  mt-4
+                  w-full
+                  bg-red-600
+                  hover:bg-red-700
+                  text-white
+                  py-3
+                  rounded-xl
+                  font-medium
+                  flex
+                  items-center
+                  justify-center
+                "
+              >
+                Reserve a Table
+              </Link>
+            </nav>
+          </div>
+        )}
+      </header>
+
+      {/* GLOBAL CART */}
+      <Cart isOpen={cartOpen} onClose={() => setCartOpen(false)} />
+    </>
   );
 };
 
