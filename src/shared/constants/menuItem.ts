@@ -30,13 +30,16 @@ export const menuItems = [
         name: "Orders",
         icon: ShoppingCart,
         path: "/admin/orders",
-        badge: 15,
+      },
+      {
+        name: "Combos",
+        icon: ShoppingCart,
+        path: "/admin/combos",
       },
       {
         name: "Verify Payments",
         icon: CreditCard,
         path: "/admin/payments",
-        badge: 6,
       },
       {
         name: "Reservations",

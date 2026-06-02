@@ -18,6 +18,8 @@ import CreateCategory from "./features/admin/pages/CreateCategory";
 import VerifyPayments from "./features/admin/pages/VerifyPayment";
 import Reservation from "./features/admin/pages/Reservation";
 import Orders from "./features/admin/pages/Orders";
+import Combos from "./features/admin/pages/Combos";
+import OrderConfirmation from "./features/payments/pages/OrderConfirmation";
 
 function App() {
   return (
@@ -45,7 +47,9 @@ function App() {
           <Route path="payment/success" element={<VerifyPayment />} />
           <Route path="reservation" element={<ReservationPage />} />
         </Route>
-
+        <Route>
+          <Route path="order-confirmation" element={<OrderConfirmation />} />
+        </Route>
         {/* ADMIN ROUTES */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
@@ -54,6 +58,7 @@ function App() {
           <Route path="products" element={<Products />} />
           <Route path="product/new" element={<NewProduct />} />
           <Route path="orders" element={<Orders />} />
+          <Route path="combos" element={<Combos />} />
           <Route path="reservations" element={<Reservation />} />
           <Route path="payments" element={<VerifyPayments />} />
           <Route path="settings" element={<CheckOut />} />

@@ -6,6 +6,7 @@ export type Order = {
     foodName: string;
     unitPrice: number;
     quantity: number;
+    imageUrl: string;
   }[];
   subtotal: number;
   deliveryFee: number;

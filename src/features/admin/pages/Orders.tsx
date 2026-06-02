@@ -29,7 +29,7 @@ const Orders = () => {
 
   const handleStatusUpdate = async (id: string, status: string) => {
     try {
-      const res = await api.put(`/orders/${id}`);
+      const res = await api.put(`/order/${id}`);
       console.log(res);
       toast.success("Order updated");
       setOrders((prev: any) =>
@@ -44,7 +44,7 @@ const Orders = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = api.delete(`/orders/${id}`);
+      const res = api.delete(`/order/${id}`);
       console.log(res);
       toast.success("Order deleted");
 
