@@ -20,6 +20,7 @@ import Reservation from "./features/admin/pages/Reservation";
 import Orders from "./features/admin/pages/Orders";
 import Combos from "./features/admin/pages/Combos";
 import OrderConfirmation from "./features/payments/pages/OrderConfirmation";
+import EditProduct from "./features/admin/pages/EditProduct";
 
 function App() {
   return (
@@ -57,6 +58,7 @@ function App() {
           <Route path="categories/new" element={<CreateCategory />} />
           <Route path="products" element={<Products />} />
           <Route path="product/new" element={<NewProduct />} />
+          <Route path="product/edit/:id" element={<EditProduct />} />
           <Route path="orders" element={<Orders />} />
           <Route path="combos" element={<Combos />} />
           <Route path="reservations" element={<Reservation />} />

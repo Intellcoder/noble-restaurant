@@ -22,10 +22,10 @@ type ProductForm = {
 
 const initialState: ProductForm = {
   name: "",
-  price: 0,
+  price: Number(0),
   categoryId: "",
   category: "",
-  quantity: 0,
+  quantity: Number(0),
   description: "",
   image: null,
   isAvailable: true,
@@ -187,7 +187,7 @@ const NewProduct = () => {
 
           <div className="grid md:grid-cols-2 gap-4">
             <input
-              type="number"
+              type="text"
               name="price"
               value={form.price}
               onChange={handleChange}
@@ -215,7 +215,7 @@ const NewProduct = () => {
           </div>
 
           <input
-            type="number"
+            type="text"
             name="quantity"
             value={form.quantity}
             onChange={handleChange}

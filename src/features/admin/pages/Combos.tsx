@@ -127,22 +127,22 @@ const Combos = () => {
 
   const [selectedFoods, setSelectedFoods] = useState<Food[]>([]);
 
-  /** Fetch foods */
-  useEffect(() => {
-    const fetchFoods = async () => {
-      try {
-        setLoadingFoods(true);
-        const res = await api.get("/food");
-        setFoods(res.data.foods);
-      } catch {
-        toast.error("Failed to load foods");
-      } finally {
-        setLoadingFoods(false);
-      }
-    };
-    fetchFoods();
-  }, []);
+  //   /** Fetch foods */
+  //   useEffect(() => {
 
+  //   }, []);
+
+  const fetchFoods = async () => {
+    try {
+      setLoadingFoods(true);
+      const res = await api.get("/food");
+      setFoods(res.data.foods);
+    } catch {
+      toast.error("Failed to load foods");
+    } finally {
+      setLoadingFoods(false);
+    }
+  };
   /** Fetch combos */
   const fetchCombos = async () => {
     try {
@@ -158,6 +158,7 @@ const Combos = () => {
   };
 
   useEffect(() => {
+    fetchFoods();
     fetchCombos();
   }, []);
 
