@@ -1,19 +1,8 @@
-import {
-  Bike,
-  Trash2,
-  Plus,
-  Minus,
-  ShoppingBag,
-  MapPin,
-  Copy,
-  CheckCheck,
-} from "lucide-react";
+import { Bike, Trash2, Plus, Minus, ShoppingBag, MapPin } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useCartStore } from "../../../store/cart.store";
 import { api } from "../../../shared/api";
 import { toast } from "react-hot-toast";
-import type { ReceiptItem } from "../../payments/pages/OrderReceipt";
 
 type OrderType = "DELIVERY" | "PICKUP";
 
@@ -23,109 +12,14 @@ type DeliveryArea = {
 };
 
 const DELIVERY_AREAS: DeliveryArea[] = [
-  { name: "Within School to Small Gate", fee: 1000 },
-  { name: "Cele Area", fee: 1200 },
-  { name: "Akede", fee: 1000 },
-  { name: "After Akede", fee: 1200 },
-  { name: "Outside town", fee: 2500 },
-  { name: "Abere", fee: 3000 },
-  { name: "Fountain University", fee: 1500 },
-  { name: "Fola Filling Station Area", fee: 800 },
-  { name: "Army Barracks Area", fee: 2000 },
-  { name: "Kasimo Area", fee: 1200 },
-  { name: "Sogbo Area", fee: 1000 },
+  { name: "Ogo-Oluwa", fee: 1000 },
+  { name: "Alekuwodo", fee: 1500 },
+  { name: "Testing Ground", fee: 1200 },
+  { name: "Old Garage", fee: 1500 },
+  { name: "Oke-Baale", fee: 1800 },
+  { name: "Powerline", fee: 2000 },
 ];
 
-const BANK_ACCOUNT = {
-  bank: "MoniePoint",
-  accountNumber: "8282557112",
-  accountName: "Noble Restaurant",
-} as const;
-
-// ── Copy button ───────────────────────────────────────────────────────────────
-const CopyButton = ({ text }: { text: string }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error("Could not copy to clipboard");
-    }
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={handleCopy}
-      className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 transition-colors"
-      aria-label="Copy account number"
-    >
-      {copied ? (
-        <>
-          <CheckCheck size={13} /> Copied
-        </>
-      ) : (
-        <>
-          <Copy size={13} /> Copy
-        </>
-      )}
-    </button>
-  );
-};
-
-// ── Bank details card ─────────────────────────────────────────────────────────
-const BankDetails = () => (
-  <div className="bg-white rounded-3xl p-6">
-    <div className="flex items-center gap-2 mb-4">
-      <span className="w-2.5 h-2.5 rounded-full bg-green-500 shrink-0" />
-      <h2 className="text-xl font-semibold text-gray-900">
-        Pay via Bank Transfer
-      </h2>
-    </div>
-    <p className="text-sm text-gray-500 mb-4 leading-relaxed">
-      Transfer your payment directly to the account below. Send your receipt
-      screenshot to us on WhatsApp after payment.
-    </p>
-    <div className="bg-gray-50 border border-gray-100 rounded-2xl divide-y divide-gray-100">
-      <div className="flex items-center justify-between px-4 py-3">
-        <span className="text-xs text-gray-400 font-medium uppercase tracking-wide">
-          Bank
-        </span>
-        <span className="text-sm font-semibold text-gray-800">
-          {BANK_ACCOUNT.bank}
-        </span>
-      </div>
-      <div className="flex items-center justify-between px-4 py-3">
-        <span className="text-xs text-gray-400 font-medium uppercase tracking-wide">
-          Account No.
-        </span>
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-bold text-gray-900 tracking-widest">
-            {BANK_ACCOUNT.accountNumber}
-          </span>
-          <CopyButton text={BANK_ACCOUNT.accountNumber} />
-        </div>
-      </div>
-      <div className="flex items-center justify-between px-4 py-3">
-        <span className="text-xs text-gray-400 font-medium uppercase tracking-wide">
-          Account Name
-        </span>
-        <span className="text-sm font-semibold text-gray-800">
-          {BANK_ACCOUNT.accountName}
-        </span>
-      </div>
-    </div>
-    <p className="text-xs text-gray-400 mt-3 leading-relaxed">
-      Use your <span className="font-medium text-gray-600">phone number</span>{" "}
-      as the transfer narration so we can match your payment to your order.
-    </p>
-  </div>
-);
-
-// ── Main Checkout ─────────────────────────────────────────────────────────────
 const Checkout = () => {
   const {
     items,
@@ -136,7 +30,6 @@ const Checkout = () => {
     clearCart,
   } = useCartStore();
 
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>("DELIVERY");
   const [customerInfo, setCustomerInfo] = useState({
@@ -212,36 +105,25 @@ const Checkout = () => {
 
       const res = await api.post("/order", payload);
 
-      // ── Grab the order data returned by the backend ──────────────────────
-      const order = res.data.data.data.order;
-      console.log("order:", order);
-      // Build receipt items from current cart (in case order.items is not returned)
-      const receiptItems: ReceiptItem[] = items.map((item) => ({
-        name: item.name,
-        quantity: item.quantity,
-        price: item.price,
-      }));
+      // ── Monnify returns a hosted checkout URL ──────────────────────────────
+      // The user picks card or bank transfer inside Monnify's own checkout UI.
+      // We just redirect them there.
+      const { paymentLink } = res.data.data.data;
 
-      // Clear cart before navigating
+      if (!paymentLink) {
+        // Fal
+        // lback: no payment link means something went wrong server-side
+        toast.error("Could not initialise payment. Please try again.");
+        return;
+      }
+
+      // Clear cart before leaving — Monnify will redirect back to your
+      // callback URL (configured in Monnify dashboard) after payment.
       clearCart();
 
-      // Navigate to receipt page — no Monnify, no verification
-      navigate("/order-confirmation", {
-        state: {
-          orderNumber: order.orderNumber ?? order.id,
-          phoneNumber: customerInfo.phoneNumber,
-          deliveryType: orderType,
-          deliveryAddress:
-            orderType === "DELIVERY"
-              ? `${customerInfo.address}, ${customerInfo.area}`
-              : null,
-          items: receiptItems,
-          subtotal,
-          deliveryFee,
-          total,
-          placedAt: new Date().toISOString(),
-        },
-      });
+      // Redirect to Monnify hosted checkout page.
+      // User sees card / bank transfer / USSD options there.
+      window.location.href = paymentLink;
     } catch (error: any) {
       const message =
         error?.response?.data?.message ?? "Unable to place order. Try again.";
@@ -257,21 +139,24 @@ const Checkout = () => {
   return (
     <section className="bg-[#F7F3ED] min-h-screen py-16 px-5">
       <div className="max-w-6xl mx-auto">
+        {/* Header */}
         <header className="text-center mb-12">
           <h1 className="font-bold text-4xl">Complete Your Order</h1>
           <p className="text-gray-500 mt-3">
-            Review your items, fill in your details, then transfer payment.
+            Review your items, fill in your details, then pay securely via
+            Monnify.
           </p>
         </header>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            {/* ── CART ──────────────────────────────────────────────── */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* ── CART ────────────────────────────────────────────────────── */}
             <div className="bg-white rounded-3xl p-6">
               <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
                 <ShoppingBag size={22} className="text-red-500" />
                 Review Cart
               </h2>
+
               {isCartEmpty ? (
                 <div className="text-center py-10 text-gray-400">
                   Your cart is empty
@@ -319,7 +204,7 @@ const Checkout = () => {
               )}
             </div>
 
-            {/* ── CUSTOMER INFO ────────────────────────────────────── */}
+            {/* ── CUSTOMER INFO ────────────────────────────────────────────── */}
             <div className="bg-white rounded-3xl p-6">
               <h2 className="text-2xl mb-6">Customer Information</h2>
               <div className="space-y-4">
@@ -339,12 +224,14 @@ const Checkout = () => {
               </div>
             </div>
 
-            {/* ── ORDER TYPE ───────────────────────────────────────── */}
+            {/* ── ORDER TYPE & DELIVERY ─────────────────────────────────────── */}
             <div className="bg-white rounded-3xl p-6">
               <h2 className="text-xl mb-5 flex items-center gap-2">
                 <Bike size={20} className="text-red-500" />
                 Order Type
               </h2>
+
+              {/* Toggle: Delivery vs Pickup */}
               <div className="grid grid-cols-2 gap-3 mb-5">
                 {(["DELIVERY", "PICKUP"] as OrderType[]).map((type) => (
                   <button
@@ -360,6 +247,7 @@ const Checkout = () => {
                   </button>
                 ))}
               </div>
+
               {orderType === "DELIVERY" && (
                 <div className="space-y-4">
                   <div className="relative">
@@ -374,6 +262,7 @@ const Checkout = () => {
                       className="w-full border rounded-xl p-4 pl-10 focus:outline-none focus:border-red-400 transition"
                     />
                   </div>
+
                   <select
                     value={customerInfo.area}
                     onChange={(e) => handleChange("area", e.target.value)}
@@ -390,14 +279,24 @@ const Checkout = () => {
               )}
             </div>
 
-            {/* ── BANK DETAILS ─────────────────────────────────────── */}
-            <BankDetails />
+            {/* ── PAYMENT NOTE ─────────────────────────────────────────────── */}
+            <div className="bg-white rounded-3xl p-6 border border-dashed border-gray-200">
+              <p className="text-sm text-gray-500 leading-relaxed">
+                <span className="font-medium text-gray-700">
+                  Secure payment via Monnify.
+                </span>{" "}
+                After placing your order you will be redirected to Monnify's
+                checkout page where you can pay with your debit card, bank
+                transfer, USSD, or phone number.
+              </p>
+            </div>
           </div>
 
-          {/* ── ORDER SUMMARY sidebar ──────────────────────────────────── */}
+          {/* ── ORDER SUMMARY ─────────────────────────────────────────────── */}
           <aside className="bg-white rounded-3xl p-6 h-fit sticky top-8">
             <h2 className="text-2xl mb-6">Order Summary</h2>
 
+            {/* Item lines */}
             <div className="space-y-2 mb-4">
               {items.map((item) => (
                 <div
@@ -434,32 +333,16 @@ const Checkout = () => {
               </div>
             </div>
 
-            {/* Mini account card */}
-            <div className="mt-5 bg-green-50 border border-green-100 rounded-2xl px-4 py-3 space-y-1.5">
-              <p className="text-xs font-semibold text-green-700 uppercase tracking-wide">
-                Transfer to
-              </p>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-gray-800 tracking-widest">
-                  {BANK_ACCOUNT.accountNumber}
-                </span>
-                <CopyButton text={BANK_ACCOUNT.accountNumber} />
-              </div>
-              <p className="text-xs text-gray-500">
-                {BANK_ACCOUNT.accountName} · {BANK_ACCOUNT.bank}
-              </p>
-            </div>
-
             <button
               disabled={loading || isCartEmpty}
               onClick={handleCheckout}
-              className="w-full mt-5 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white p-4 rounded-xl font-semibold transition-colors duration-200"
+              className="w-full mt-6 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white p-4 rounded-xl font-semibold transition-colors duration-200"
             >
-              {loading ? "Placing Order..." : "Place Order"}
+              {loading ? "Processing..." : "Place Order & Pay"}
             </button>
 
             <p className="text-xs text-center text-gray-400 mt-3">
-              Your order receipt will be shown immediately after placing
+              You'll be redirected to Monnify to complete payment
             </p>
           </aside>
         </div>
