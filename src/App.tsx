@@ -21,6 +21,7 @@ import Orders from "./features/admin/pages/Orders";
 import Combos from "./features/admin/pages/Combos";
 import OrderConfirmation from "./features/payments/pages/OrderConfirmation";
 import EditProduct from "./features/admin/pages/EditProduct";
+import TrackOrder from "./features/orders/pages/TrackOrder";
 
 function App() {
   return (
@@ -45,7 +46,8 @@ function App() {
           <Route path="about" element={<AboutPage />} />
           <Route path="menu" element={<MenuPage />} />
           <Route path="checkout" element={<CheckOut />} />
-          <Route path="payment/success" element={<VerifyPayment />} />
+          <Route path="order" element={<TrackOrder />} />
+          <Route path="payment/verify/paystack" element={<VerifyPayment />} />
           <Route path="reservation" element={<ReservationPage />} />
         </Route>
         <Route>

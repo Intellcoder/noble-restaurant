@@ -6,6 +6,8 @@ import { api } from "../../../shared/api";
 type PaymentStatus = "loading" | "success" | "failed" | "pending";
 
 type Order = {
+  success: boolean;
+  message: string;
   id: string;
   orderNumber: string;
   phoneNumber: string;
@@ -16,6 +18,7 @@ type Order = {
   totalAmount: number;
   paymentStatus: "PAID" | "FAILED" | "PENDING";
   orderStatus: string;
+  items: [];
 };
 
 // type ApiResponse = {
@@ -29,7 +32,7 @@ const VerifyPayment = () => {
   const navigate = useNavigate();
 
   const paymentReference = new URLSearchParams(location.search).get(
-    "paymentReference",
+    "reference",
   );
 
   const [status, setStatus] = useState<PaymentStatus>("loading");
@@ -51,9 +54,8 @@ const VerifyPayment = () => {
 
         const { success, message, data } = res.data;
 
-        console.log("API response:", res.data.data);
-        console.log("message:", message);
-        const resData = data.data;
+        const resData = data;
+
         if (!success) {
           setStatus("failed");
           setError(message || "Payment verification failed");
@@ -62,6 +64,7 @@ const VerifyPayment = () => {
 
         setOrderData(resData);
 
+        console.log("payment status:", resData.paymentStatus);
         if (resData.paymentStatus === "PAID") {
           setStatus("success");
         } else if (resData.paymentStatus === "PENDING") {
@@ -103,10 +106,11 @@ const VerifyPayment = () => {
         phone: orderData?.phoneNumber ?? "—",
         address: orderData?.deliveryAddress ?? "—",
       }}
+      items={orderData?.items ?? []}
       subtotal={orderData?.subtotal ?? 0}
       deliveryFee={orderData?.deliveryFee ?? 0}
       total={orderData?.totalAmount ?? 0}
-      paymentMethod="Monnify"
+      // paymentMethod="Monnify"
       errorMessage={status === "failed" ? error : undefined}
       onPrimaryAction={() =>
         navigate(status === "success" ? "/menu" : "/checkout")

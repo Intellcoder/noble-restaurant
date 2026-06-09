@@ -12,15 +12,20 @@ import { CheckCircle2, XCircle, Clock3 } from "lucide-react";
 // ✅ aligned with VerifyPayment's PaymentState
 type PaymentStatus = "success" | "failed" | "pending";
 
+type OrderItem = {
+  foodName: string;
+  quantity: number;
+  unitPrice: number;
+};
+
 type Props = {
   status: PaymentStatus;
   orderId: string;
   customer: { phone: string; address: string };
-  // items: OrderItem[];
+  items: OrderItem[];
   subtotal: number;
   deliveryFee: number;
   total: number;
-  paymentMethod: string;
   errorMessage?: string;
   onPrimaryAction?: () => void;
   onSecondaryAction?: () => void;
@@ -30,11 +35,11 @@ const PaymentStatusCard = ({
   status,
   orderId,
   customer,
-  // items,
+  items,
   subtotal,
   deliveryFee,
   total,
-  paymentMethod,
+  // paymentMethod,
   errorMessage,
   onPrimaryAction,
   onSecondaryAction,
@@ -136,19 +141,19 @@ const PaymentStatusCard = ({
           <div>
             <h2 className="text-2xl font-semibold">Order Items</h2>
             <div className="mt-5 space-y-5">
-              {/* {items.map((item, index) => (
+              {items.map((item, index) => (
                 <div key={index} className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-medium text-lg">{item.name}</h3>
+                    <h3 className="font-medium text-lg">{item.foodName}</h3>
                     <p className="text-gray-500 mt-1">
                       Quantity: {item.quantity}
                     </p>
                   </div>
                   <p className="font-semibold text-red-600">
-                    ₦{item.price.toLocaleString()}
+                    ₦{item.unitPrice.toLocaleString()}
                   </p>
                 </div>
-              ))} */}
+              ))}
             </div>
           </div>
 
@@ -157,10 +162,10 @@ const PaymentStatusCard = ({
           <div>
             <h2 className="text-2xl font-semibold">Payment Summary</h2>
             <div className="mt-5 space-y-4 text-gray-600">
-              <div className="flex justify-between">
+              {/* <div className="flex justify-between">
                 <span>Payment Method</span>
                 <span className="font-medium">{paymentMethod}</span>
-              </div>
+              </div> */}
               <div className="flex justify-between">
                 <span>Subtotal</span>
                 <span>₦{subtotal.toLocaleString()}</span>
