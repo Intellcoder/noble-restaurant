@@ -11,6 +11,7 @@ import ContactUsPage from "./features/home/pages/ContactPage";
 import AdminLayout from "./features/admin/pages/AdminLayout";
 import Categories from "./features/admin/pages/Categories";
 import Products from "./features/admin/pages/Product";
+import EditCategory from "./features/admin/pages/EditCategory";
 import Dashboard from "./features/admin/pages/Dashboard";
 import ReservationPage from "./features/reservation/ReservationPage";
 import NewProduct from "./features/admin/pages/NewProduct";
@@ -58,6 +59,7 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="categories" element={<Categories />} />
           <Route path="categories/new" element={<CreateCategory />} />
+          <Route path="categories/edit/:id" element={<EditCategory />} />
           <Route path="products" element={<Products />} />
           <Route path="product/new" element={<NewProduct />} />
           <Route path="product/edit/:id" element={<EditProduct />} />

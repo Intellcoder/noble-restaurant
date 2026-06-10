@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import Card from "../components/Card";
 import { Link } from "react-router-dom";
-import { api } from "../../../shared/api";
+import Card from "../components/Card";
 import Loader from "../../../shared/components/Loader";
-
-type Category = string;
+import { api } from "../../../shared/api";
 
 type Food = {
   id: string;
@@ -13,28 +11,31 @@ type Food = {
   price: number;
   badge?: string;
   description: string;
-  category: string;
 };
 
+type Category = {
+  id: string;
+  name: string;
+  foods: Food[];
+};
+
+type Tab = "ALL" | string;
+
 const MenuPage = () => {
-  const [foods, setFoods] = useState<Food[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState<Category>("All");
+  const [activeTab, setActiveTab] = useState<Tab>("Main Meals");
 
   useEffect(() => {
     const fetchFoods = async () => {
       try {
         setLoading(true);
 
-        const res = await api.get("/food");
-
-        // Adjust according to your backend structure
-        const foodData = res.data.foods || res.data;
-
-        setFoods(foodData);
+        const res = await api.get("/food/category");
+        setCategories(res.data.foods || res.data || []);
       } catch (error) {
-        console.log("Error fetching foods:", error);
-        setFoods([]);
+        console.error("Error fetching menu:", error);
+        setCategories([]);
       } finally {
         setLoading(false);
       }
@@ -43,18 +44,22 @@ const MenuPage = () => {
     fetchFoods();
   }, []);
 
-  // Generate categories dynamically from backend foods
-  const categories = useMemo(() => {
-    const categoryNames = foods.map((food) => food.category).filter(Boolean);
+  /**
+   * Flatten all foods for "ALL" tab
+   */
+  const allFoods = useMemo(() => {
+    return categories.flatMap((cat) => cat.foods);
+  }, [categories]);
 
-    return ["All", ...new Set(categoryNames)];
-  }, [foods]);
+  /**
+   * Get foods based on active tab
+   */
+  const displayedFoods = useMemo(() => {
+    if (activeTab === "Main Meals") return allFoods;
 
-  const filteredFoods = useMemo(() => {
-    if (activeCategory === "All") return foods;
-
-    return foods.filter((food) => food.category === activeCategory);
-  }, [foods, activeCategory]);
+    const category = categories.find((c) => c.id === activeTab);
+    return category?.foods || [];
+  }, [activeTab, categories, allFoods]);
 
   return (
     <main className="bg-white">
@@ -63,54 +68,66 @@ const MenuPage = () => {
         <img
           src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1600"
           alt="Restaurant menu"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover"
         />
-
         <div className="absolute inset-0 bg-black/70" />
 
-        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-5">
-          <span className="uppercase tracking-[4px] text-red-500 text-sm font-medium">
+        <div className="relative z-10 flex h-full flex-col items-center justify-center px-5 text-center">
+          <span className="text-sm font-medium uppercase tracking-[4px] text-red-500">
             Noble Restaurant Menu
           </span>
 
-          <h1 className="mt-4 text-white text-4xl md:text-6xl font-bold max-w-4xl">
+          <h1 className="mt-4 max-w-4xl text-4xl font-bold text-white md:text-6xl">
             Authentic Nigerian Food Menu
           </h1>
 
-          <p className="mt-6 text-gray-300 max-w-2xl">
+          <p className="mt-6 max-w-2xl text-gray-300">
             Explore our delicious collection of meals freshly prepared daily.
           </p>
         </div>
       </section>
 
       {/* MENU */}
-      <section className="px-5 py-20 max-w-7xl mx-auto">
-        <header className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold">Explore Our Menu</h2>
-
+      <section className="mx-auto max-w-7xl px-5 py-20">
+        <header className="mb-10 text-center">
+          <h2 className="text-3xl font-bold md:text-4xl">Explore Our Menu</h2>
           <p className="mt-4 text-gray-500">
             Discover premium Nigerian cuisine and chef specials.
           </p>
         </header>
 
-        {/* CATEGORY BUTTONS */}
-        {!loading && categories.length > 1 && (
-          <nav className="flex flex-wrap justify-center gap-4 mb-14">
-            {categories.map((category) => (
+        {/* 🔥 CATEGORY TABS */}
+        {!loading && categories.length > 0 && (
+          <div className="sticky top-0 z-20 mb-10 bg-white py-4">
+            <div className="flex gap-3 overflow-x-auto pb-2">
+              {/* ALL TAB */}
               <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
-                className={`px-6 py-3 rounded-full border transition
-                ${
-                  activeCategory === category
+                onClick={() => setActiveTab("Main Meals")}
+                className={`whitespace-nowrap rounded-full px-5 py-2 border transition ${
+                  activeTab === "Main Meals"
                     ? "bg-red-600 text-white border-red-600"
-                    : "border-gray-300 text-gray-700 hover:border-red-500"
+                    : "border-gray-300 text-gray-700"
                 }`}
               >
-                {category}
+                Main Meals
               </button>
-            ))}
-          </nav>
+
+              {/* CATEGORY TABS */}
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveTab(cat.id)}
+                  className={`whitespace-nowrap rounded-full px-5 py-2 border transition ${
+                    activeTab === cat.id
+                      ? "bg-red-600 text-white border-red-600"
+                      : "border-gray-300 text-gray-700"
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* LOADING */}
@@ -118,9 +135,9 @@ const MenuPage = () => {
           <div className="flex justify-center py-20">
             <Loader />
           </div>
-        ) : filteredFoods.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {filteredFoods.map((food) => (
+        ) : displayedFoods.length > 0 ? (
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {displayedFoods.map((food) => (
               <Card
                 key={food.id}
                 id={food.id}
@@ -136,14 +153,12 @@ const MenuPage = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-20">
-            <div className="text-5xl mb-4">🍽️</div>
-
+          <div className="py-20 text-center">
+            <div className="mb-4 text-5xl">🍽️</div>
             <h3 className="text-xl font-semibold text-gray-700">
               No food available
             </h3>
-
-            <p className="text-gray-500 mt-2">
+            <p className="mt-2 text-gray-500">
               Meals will appear here once added.
             </p>
           </div>
@@ -151,9 +166,9 @@ const MenuPage = () => {
       </section>
 
       {/* CTA */}
-      <section className="bg-black text-white py-20 px-5">
-        <div className="max-w-5xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold">
+      <section className="bg-black px-5 py-20 text-white">
+        <div className="mx-auto max-w-5xl text-center">
+          <h2 className="text-4xl font-bold md:text-5xl">
             Experience Fine Dining
           </h2>
 
@@ -161,15 +176,15 @@ const MenuPage = () => {
             Reserve your table today or order your favorite meals online.
           </p>
 
-          <div className="flex flex-col sm:flex-row justify-center gap-5 mt-10">
+          <div className="mt-10 flex flex-col justify-center gap-5 sm:flex-row">
             <Link to="/reservation">
-              <button className="bg-red-600 px-8 py-4 rounded-xl hover:bg-red-700">
+              <button className="rounded-xl bg-red-600 px-8 py-4 hover:bg-red-700">
                 Reserve a Table
               </button>
             </Link>
 
             <Link to="/menu">
-              <button className="border border-white px-8 py-4 rounded-xl hover:bg-white hover:text-black">
+              <button className="rounded-xl border border-white px-8 py-4 hover:bg-white hover:text-black">
                 Order Online
               </button>
             </Link>
