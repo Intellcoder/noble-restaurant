@@ -52,6 +52,8 @@ const DELIVERY_AREAS: DeliveryArea[] = [
   { name: "Lick sensation area", fee: 1000 },
   { name: "Second gate area", fee: 1000 },
   { name: "Small gate", fee: 1300 },
+  { name: "Osunlepo", fee: 1300 },
+  { name: "URP", fee: 1300 },
 ];
 
 const Checkout = () => {
