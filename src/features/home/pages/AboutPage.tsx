@@ -8,9 +8,9 @@ import {
   Phone,
 } from "lucide-react";
 
-import aboutBanner from "../../../assets/nick-karvounis-Ciqxn7FE4vE-unsplash.jpg";
-import chefImage from "../../../assets/jason-leung-poI7DelFiVA-unsplash.jpg";
-import diningImage from "../../../assets/patrick-tomasso-GXXYkSwndP4-unsplash.jpg";
+import aboutBanner from "../../../assets/resaurant 4.jpeg";
+import chefImage from "../../../assets/restaurant 2.jpeg";
+import diningImage from "../../../assets/restaurant 3.jpeg";
 
 const AboutPage = () => {
   return (
@@ -129,15 +129,21 @@ const AboutPage = () => {
               </h2>
 
               <p className="mt-6 text-gray-600 leading-relaxed text-lg">
-                Noble Restaurant was founded with one mission — to create a
-                restaurant where people can enjoy authentic Nigerian dishes in a
-                warm, modern, and premium environment.
+                What started as a passion has become an exceptional journey in
+                the culinary world. Noble Restaurant, established in 2019, is a
+                food service organization located at Okebaale, Onababaona Ring
+                Road, Osogbo, Nigeria. We provide healthy, delicious, and
+                affordable meals for both the young and old in a clean,
+                comfortable, and welcoming environment.
               </p>
 
               <p className="mt-5 text-gray-600 leading-relaxed text-lg">
-                From perfectly prepared Jollof Rice to rich soups, grills,
-                swallows, and signature local delicacies, every meal is crafted
-                with quality ingredients and exceptional attention to taste.
+                Today, we give thanks to God for His vision and grace, and we
+                sincerely appreciate our esteemed customers for your continued
+                support, patronage, and referrals throughout the years. We have
+                come to stay—serving this generation and the generations to come
+                with quality food and excellent service. Thank you for your
+                unwavering support. ❤️
               </p>
 
               {/* FEATURES */}

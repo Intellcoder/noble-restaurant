@@ -21,11 +21,7 @@ type Order = {
   items: [];
 };
 
-// type ApiResponse = {
-//   success: boolean;
-//   message: string;
-//   data: Order;
-// };
+
 
 const VerifyPayment = () => {
   const location = useLocation();

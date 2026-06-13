@@ -22,7 +22,8 @@ const Products = () => {
     try {
       setLoading(true);
 
-      const res = await api.get("/food");
+      const res = await api.get("/food/allfoods");
+
       const { foods } = res.data;
       // adjust according to backend structure
       const foodsData = foods;
@@ -51,6 +52,16 @@ const Products = () => {
     }
   };
 
+  const handleToggle = async (id: string) => {
+    try {
+      await api.patch(`/food/${id}/toggle`);
+      toast.success("Food item switched");
+      setLoading(true);
+      await fetchFoods();
+    } catch (error) {
+      toast.error("Unable to turn off food");
+    }
+  };
   useEffect(() => {
     fetchFoods();
   }, []);
@@ -87,6 +98,7 @@ const Products = () => {
               key={food.id}
               food={food}
               onDelete={() => deleteFood(food.id)}
+              onToggleAvailability={() => handleToggle(food.id)}
             />
           ))}
         </div>

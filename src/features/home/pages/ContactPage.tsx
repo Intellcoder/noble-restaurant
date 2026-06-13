@@ -10,7 +10,7 @@ import {
   Users,
 } from "lucide-react";
 
-import contactBanner from "../../../assets/jason-leung-poI7DelFiVA-unsplash.jpg";
+import contactBanner from "../../../assets/restaurant 2.jpeg";
 
 const ContactUsPage = () => {
   return (

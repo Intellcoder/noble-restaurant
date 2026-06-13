@@ -1,5 +1,5 @@
 import { CalendarDays, Clock3, PhoneCall } from "lucide-react";
-
+import reservationBg from "../../../assets/resaurant 4.jpeg";
 import { Link } from "react-router-dom";
 
 const Reservation = () => {
@@ -9,8 +9,7 @@ const Reservation = () => {
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1552566626-52f8b828add9?q=80&w=1600')",
+          backgroundImage: `url(${reservationBg})`,
         }}
       />
 

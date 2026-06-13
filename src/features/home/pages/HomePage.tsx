@@ -33,7 +33,7 @@ const HomePage = () => {
       <section className="bg-[#F7F3ED]">
         <HeroSection />
         <SignatureDishes />
-        <Testimonials />
+        {/* <Testimonials /> */}
         <Reservation />
       </section>
     </>

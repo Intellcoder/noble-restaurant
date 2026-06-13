@@ -1,5 +1,4 @@
-import { Pencil, Trash2 } from "lucide-react";
-
+import { Pencil, Trash2, Power } from "lucide-react";
 import { Link } from "react-router-dom";
 
 type Food = {
@@ -14,9 +13,10 @@ type Food = {
 type Props = {
   food: Food;
   onDelete: () => void;
+  onToggleAvailability: () => void;
 };
 
-const AdminFoodCard = ({ food, onDelete }: Props) => {
+const AdminFoodCard = ({ food, onDelete, onToggleAvailability }: Props) => {
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm border">
       <img
@@ -52,10 +52,10 @@ const AdminFoodCard = ({ food, onDelete }: Props) => {
           </p>
         </div>
 
-        <div className="flex gap-3 mt-6">
+        <div className="grid grid-cols-3 gap-3 mt-6">
           <Link
             to={`/admin/product/edit/${food.id}`}
-            className="flex-1 flex items-center justify-center gap-2 bg-blue-500 text-white py-2 rounded-xl"
+            className="flex items-center justify-center gap-2 bg-blue-500 text-white py-2 rounded-xl"
           >
             <Pencil size={16} />
             Edit
@@ -63,10 +63,22 @@ const AdminFoodCard = ({ food, onDelete }: Props) => {
 
           <button
             onClick={onDelete}
-            className="flex-1 flex items-center justify-center gap-2 bg-red-500 text-white py-2 rounded-xl"
+            className="flex items-center justify-center gap-2 bg-red-500 text-white py-2 rounded-xl"
           >
             <Trash2 size={16} />
             Delete
+          </button>
+
+          <button
+            onClick={onToggleAvailability}
+            className={`flex items-center justify-center gap-2 py-2 rounded-xl text-white px-1 ${
+              food.isAvailable
+                ? "bg-orange-500 hover:bg-orange-600"
+                : "bg-green-500 hover:bg-green-600"
+            }`}
+          >
+            <Power size={16} />
+            {food.isAvailable ? "Disable" : "Enable"}
           </button>
         </div>
       </div>

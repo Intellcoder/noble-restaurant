@@ -12,8 +12,8 @@ type DeliveryArea = {
 };
 
 const DELIVERY_AREAS: DeliveryArea[] = [
-  { name: "Kelebe Mubaraka", fee: 2000 },
-  { name: "Demo filling station", fee: 2000 },
+  { name: "Kelebe Mubaraka", fee: 2500 },
+  { name: "Demo filling station", fee: 2500 },
   { name: "GRA", fee: 2000 },
   { name: "Oke goshen mallam Tope", fee: 2000 },
   { name: "Ayekaale", fee: 3000 },
@@ -52,8 +52,8 @@ const DELIVERY_AREAS: DeliveryArea[] = [
   { name: "Lick sensation area", fee: 1000 },
   { name: "Second gate area", fee: 1000 },
   { name: "Small gate", fee: 1300 },
-  { name: "Osunlepo", fee: 1300 },
-  { name: "URP", fee: 1300 },
+  { name: "Osunlepo", fee: 1500 },
+  { name: "URP", fee: 1500 },
 ];
 
 const Checkout = () => {

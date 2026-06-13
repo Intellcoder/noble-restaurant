@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
-import hero1 from "../../../assets/nick-karvounis-Ciqxn7FE4vE-unsplash.jpg";
-import hero2 from "../../../assets/patrick-tomasso-GXXYkSwndP4-unsplash.jpg";
-import hero3 from "../../../assets/jason-leung-poI7DelFiVA-unsplash.jpg";
+import hero1 from "../../../assets/restaurant 1.jpeg";
+import hero2 from "../../../assets/restaurant 2.jpeg";
+import hero3 from "../../../assets/restaurant 3.jpeg";
 import { Link } from "react-router-dom";
 
 const slides = [

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Card from "../components/Card";
 import Loader from "../../../shared/components/Loader";
 import { api } from "../../../shared/api";
+import restaurantBg from "../../../assets/resaurant 4.jpeg";
 
 type Food = {
   id: string;
@@ -66,7 +67,7 @@ const MenuPage = () => {
       {/* HERO */}
       <section className="relative h-[60vh] overflow-hidden">
         <img
-          src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=1600"
+          src={restaurantBg}
           alt="Restaurant menu"
           className="absolute inset-0 h-full w-full object-cover"
         />
