@@ -20,7 +20,17 @@ type Category = {
   foods: Food[];
 };
 
-type Tab = "ALL" | string;
+type Tab = "Main Meals" | string;
+
+const CATEGORY_ORDER = [
+  "Foods",
+  "Swallows & Soups",
+  "Proteins",
+  "Snacks",
+  "Drinks & Beverages",
+  "Noble Combo Specials",
+  "Takeaway Packs",
+];
 
 const MenuPage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -31,9 +41,16 @@ const MenuPage = () => {
     const fetchFoods = async () => {
       try {
         setLoading(true);
-
         const res = await api.get("/food/category");
-        setCategories(res.data.foods || res.data || []);
+        const raw: Category[] = res.data.foods || res.data || [];
+
+        const sorted = [...raw].sort((a, b) => {
+          const ai = CATEGORY_ORDER.indexOf(a.name);
+          const bi = CATEGORY_ORDER.indexOf(b.name);
+          return (ai === -1 ? Infinity : ai) - (bi === -1 ? Infinity : bi);
+        });
+
+        setCategories(sorted);
       } catch (error) {
         console.error("Error fetching menu:", error);
         setCategories([]);
@@ -45,19 +62,12 @@ const MenuPage = () => {
     fetchFoods();
   }, []);
 
-  /**
-   * Flatten all foods for "ALL" tab
-   */
   const allFoods = useMemo(() => {
     return categories.flatMap((cat) => cat.foods);
   }, [categories]);
 
-  /**
-   * Get foods based on active tab
-   */
   const displayedFoods = useMemo(() => {
     if (activeTab === "Main Meals") return allFoods;
-
     const category = categories.find((c) => c.id === activeTab);
     return category?.foods || [];
   }, [activeTab, categories, allFoods]);
@@ -72,16 +82,13 @@ const MenuPage = () => {
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-black/70" />
-
         <div className="relative z-10 flex h-full flex-col items-center justify-center px-5 text-center">
           <span className="text-sm font-medium uppercase tracking-[4px] text-red-500">
             Noble Restaurant Menu
           </span>
-
           <h1 className="mt-4 max-w-4xl text-4xl font-bold text-white md:text-6xl">
             Authentic Nigerian Food Menu
           </h1>
-
           <p className="mt-6 max-w-2xl text-gray-300">
             Explore our delicious collection of meals freshly prepared daily.
           </p>
@@ -97,11 +104,10 @@ const MenuPage = () => {
           </p>
         </header>
 
-        {/* 🔥 CATEGORY TABS */}
+        {/* CATEGORY TABS */}
         {!loading && categories.length > 0 && (
           <div className="sticky top-0 z-20 mb-10 bg-white py-4">
             <div className="flex gap-3 overflow-x-auto pb-2">
-              {/* ALL TAB */}
               <button
                 onClick={() => setActiveTab("Main Meals")}
                 className={`whitespace-nowrap rounded-full px-5 py-2 border transition ${
@@ -113,7 +119,6 @@ const MenuPage = () => {
                 Main Meals
               </button>
 
-              {/* CATEGORY TABS */}
               {categories.map((cat) => (
                 <button
                   key={cat.id}
@@ -131,7 +136,7 @@ const MenuPage = () => {
           </div>
         )}
 
-        {/* LOADING */}
+        {/* FOOD GRID */}
         {loading ? (
           <div className="flex justify-center py-20">
             <Loader />
@@ -172,18 +177,15 @@ const MenuPage = () => {
           <h2 className="text-4xl font-bold md:text-5xl">
             Experience Fine Dining
           </h2>
-
           <p className="mt-6 text-gray-300">
             Reserve your table today or order your favorite meals online.
           </p>
-
           <div className="mt-10 flex flex-col justify-center gap-5 sm:flex-row">
             <Link to="/reservation">
               <button className="rounded-xl bg-red-600 px-8 py-4 hover:bg-red-700">
                 Reserve a Table
               </button>
             </Link>
-
             <Link to="/menu">
               <button className="rounded-xl border border-white px-8 py-4 hover:bg-white hover:text-black">
                 Order Online

@@ -17,6 +17,7 @@ const DELIVERY_AREAS: DeliveryArea[] = [
   { name: "GRA", fee: 2000 },
   { name: "Oke goshen mallam Tope", fee: 2000 },
   { name: "Ayekaale", fee: 3000 },
+  { name: "Elizabeth estate", fee: 3500 },
   { name: "Ota ifun", fee: 2000 },
   { name: "Sogbo area", fee: 1000 },
   { name: "O & A", fee: 1000 },

@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import HeroSection from "../sections/HeroSection";
 import SignatureDishes from "../sections/SignatureDishes";
-import Testimonials from "../sections/Testimonials";
+// import Testimonials from "../sections/Testimonials";
 import Reservation from "../sections/Reservation";
 
 const HomePage = () => {
