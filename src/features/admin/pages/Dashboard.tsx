@@ -154,7 +154,7 @@ const Dashboard = () => {
 
       {/* ================= CONTENT ================= */}
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1  gap-6">
         {/* RECENT ORDERS */}
 
         <div className="xl:col-span-2 bg-white rounded-2xl p-6 shadow-sm">
@@ -208,14 +208,14 @@ const Dashboard = () => {
 
         {/* PENDING PAYMENTS */}
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
+        {/* <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex justify-between mb-6">
             <h2 className="font-bold text-xl">Payment Queue</h2>
 
             <Clock3 className="text-red-500" />
           </div>
 
-          {/* <div className="space-y-4">
+           <div className="space-y-4">
             {dashboard.pendingPayments.map((payment) => (
               <div key={payment.id} className="border rounded-xl p-4">
                 <div className="flex justify-between">
@@ -237,8 +237,8 @@ const Dashboard = () => {
                 </button>
               </div>
             ))}
-          </div> */}
-        </div>
+          </div> 
+        </div> */}
       </div>
     </div>
   );
