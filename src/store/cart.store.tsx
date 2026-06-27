@@ -6,18 +6,31 @@ type CartStore = {
   items: CartItem[];
 
   addToCart: (item: CartItem) => void;
+  removeFromCart: (cartId: string) => void;
 
-  removeFromCart: (id: string) => void;
+  increaseQuantity: (cartId: string) => void;
+  decreaseQuantity: (cartId: string) => void;
 
-  increaseQuantity: (id: string) => void;
-
-  decreaseQuantity: (id: string) => void;
+  updateAddons: (cartId: string, addons: CartItem["addons"]) => void;
 
   clearCart: () => void;
 
   getTotalPrice: () => number;
-
   getTotalItems: () => number;
+};
+
+const calculateItemTotal = (item: CartItem) => {
+  const addonsTotal = (item.addons ?? []).reduce(
+    (sum, addon) => sum + addon.price,
+    0,
+  );
+
+  const packagingFee = item.requirePackaging ? item.packagingFee : 0;
+
+  const total =
+    (Number(item.price) + addonsTotal + packagingFee) * item.quantity;
+
+  return total;
 };
 
 export const useCartStore = create<CartStore>()(
@@ -31,8 +44,8 @@ export const useCartStore = create<CartStore>()(
         );
 
         if (existingItem) {
-          set({
-            items: get().items.map((cartItem) =>
+          set((state) => ({
+            items: state.items.map((cartItem) =>
               cartItem.id === item.id
                 ? {
                     ...cartItem,
@@ -40,23 +53,25 @@ export const useCartStore = create<CartStore>()(
                   }
                 : cartItem,
             ),
-          });
-        } else {
-          set({
-            items: [...get().items, item],
-          });
+          }));
+
+          return;
         }
+
+        set((state) => ({
+          items: [...state.items, item],
+        }));
       },
 
       removeFromCart: (id) => {
-        set({
-          items: get().items.filter((item) => item.id !== id),
-        });
+        set((state) => ({
+          items: state.items.filter((item) => item.id !== id),
+        }));
       },
 
       increaseQuantity: (id) => {
-        set({
-          items: get().items.map((item) =>
+        set((state) => ({
+          items: state.items.map((item) =>
             item.id === id
               ? {
                   ...item,
@@ -64,13 +79,13 @@ export const useCartStore = create<CartStore>()(
                 }
               : item,
           ),
-        });
+        }));
       },
 
       decreaseQuantity: (id) => {
-        set({
-          items: get()
-            .items.map((item) =>
+        set((state) => ({
+          items: state.items
+            .map((item) =>
               item.id === id
                 ? {
                     ...item,
@@ -79,7 +94,20 @@ export const useCartStore = create<CartStore>()(
                 : item,
             )
             .filter((item) => item.quantity > 0),
-        });
+        }));
+      },
+
+      updateAddons: (cartId, addons) => {
+        set((state) => ({
+          items: state.items.map((item) =>
+            item.cartId === cartId
+              ? {
+                  ...item,
+                  addons,
+                }
+              : item,
+          ),
+        }));
       },
 
       clearCart: () => {
@@ -88,13 +116,13 @@ export const useCartStore = create<CartStore>()(
 
       getTotalPrice: () => {
         return get().items.reduce(
-          (acc, item) => acc + item.price * item.quantity,
+          (total, item) => total + calculateItemTotal(item),
           0,
         );
       },
 
       getTotalItems: () => {
-        return get().items.reduce((acc, item) => acc + item.quantity, 0);
+        return get().items.reduce((total, item) => total + item.quantity, 0);
       },
     }),
     {

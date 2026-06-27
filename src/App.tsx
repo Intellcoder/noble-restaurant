@@ -23,6 +23,16 @@ import Combos from "./features/admin/pages/Combos";
 import OrderConfirmation from "./features/payments/pages/OrderConfirmation";
 import EditProduct from "./features/admin/pages/EditProduct";
 import TrackOrder from "./features/orders/pages/TrackOrder";
+import RiderDashboard from "./features/delivery/pages/RiderDashboard";
+import LoginPage from "./features/auth/pages/Login";
+import ForgotPasswordPage from "./features/auth/pages/ForgotPassword";
+import AuthLayout from "./features/auth/components/AuthLayout";
+import ResetPasswordPage from "./features/auth/pages/ResetPassword";
+import FoodDetailsPage from "./features/menu/pages/FoodDetail";
+import RidersPage from "./features/admin/pages/RidersPage";
+import RiderActivityPage from "./features/delivery/components/RiderActivityPage";
+import ProtectedRoute from "./shared/components/ProtectedRoute";
+import Packages from "./features/admin/pages/Packages";
 
 function App() {
   return (
@@ -45,6 +55,7 @@ function App() {
           <Route index element={<HomePage />} />
           <Route path="contact" element={<ContactUsPage />} />
           <Route path="about" element={<AboutPage />} />
+          <Route path="menu/:id" element={<FoodDetailsPage />} />
           <Route path="menu" element={<MenuPage />} />
           <Route path="checkout" element={<CheckOut />} />
           <Route path="order" element={<TrackOrder />} />
@@ -56,19 +67,33 @@ function App() {
         </Route>
         {/* ADMIN ROUTES */}
         <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="categories" element={<Categories />} />
-          <Route path="categories/new" element={<CreateCategory />} />
-          <Route path="categories/edit/:id" element={<EditCategory />} />
-          <Route path="products" element={<Products />} />
-          <Route path="product/new" element={<NewProduct />} />
-          <Route path="product/edit/:id" element={<EditProduct />} />
-          <Route path="orders" element={<Orders />} />
-          <Route path="combos" element={<Combos />} />
-          <Route path="reservations" element={<Reservation />} />
-          <Route path="payments" element={<VerifyPayments />} />
-          <Route path="settings" element={<CheckOut />} />
-          <Route path="promotions" element={<CheckOut />} />
+          <Route element={<ProtectedRoute allowedRole="admin" />}>
+            <Route index element={<Dashboard />} />
+            <Route path="categories" element={<Categories />} />
+            <Route path="categories/new" element={<CreateCategory />} />
+            <Route path="categories/edit/:id" element={<EditCategory />} />
+            <Route path="products" element={<Products />} />
+            <Route path="product/new" element={<NewProduct />} />
+            <Route path="product/edit/:id" element={<EditProduct />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="packages" element={<Packages />} />
+            <Route path="combos" element={<Combos />} />
+            <Route path="riders" element={<RidersPage />} />
+            <Route path="riders/:id" element={<RiderActivityPage />} />
+            <Route path="reservations" element={<Reservation />} />
+            <Route path="payments" element={<VerifyPayments />} />
+            <Route path="settings" element={<CheckOut />} />
+            <Route path="promotions" element={<CheckOut />} />
+          </Route>
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRole="rider" />}>
+          <Route path="/rider/:id" element={<RiderDashboard />}></Route>
+        </Route>
+        <Route path="/auth" element={<AuthLayout />}>
+          <Route path="/auth/login" element={<LoginPage />} />
+          <Route path="/auth/forgot" element={<ForgotPasswordPage />} />
+          <Route path="/auth/reset/" element={<ResetPasswordPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

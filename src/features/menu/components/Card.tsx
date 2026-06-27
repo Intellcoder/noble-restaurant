@@ -2,6 +2,8 @@ import { ShoppingCart, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCartStore } from "../../../store/cart.store";
 import toast from "react-hot-toast";
+import { nanoid } from "nanoid";
+import { TAKEAWAY_PACKAGING_FEE } from "../../../shared/types/cart.type";
 
 type FoodCardProps = {
   id: string;
@@ -9,6 +11,16 @@ type FoodCardProps = {
   name: string;
   image: string;
   price: number;
+
+  requirePackaging?: boolean;
+  packagingFee?: number;
+
+  addons?: {
+    id: string;
+    name: string;
+    price: number;
+  }[];
+
   description?: string;
   badge?: string;
   category?: string;
@@ -21,6 +33,10 @@ const FoodCard = ({
   name,
   image,
   price,
+
+  requirePackaging,
+  packagingFee,
+  addons = [],
   description,
   badge,
   category,
@@ -28,13 +44,19 @@ const FoodCard = ({
 }: FoodCardProps) => {
   const addToCart = useCartStore((state) => state.addToCart);
 
+  console.log("addons:", addons);
+  console.log("packaging Fee:", packagingFee);
   const handleAddToCart = () => {
     addToCart({
+      cartId: nanoid(),
       id,
       name,
       image,
       price,
       quantity: 1,
+      requirePackaging: requirePackaging ?? false,
+      packagingFee: requirePackaging ? TAKEAWAY_PACKAGING_FEE : 0,
+      addons: [],
     });
     toast.success("Added to cart");
   };

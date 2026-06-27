@@ -3,59 +3,10 @@ import { useMemo, useState } from "react";
 import { useCartStore } from "../../../store/cart.store";
 import { api } from "../../../shared/api";
 import { toast } from "react-hot-toast";
+import { DELIVERY_AREAS } from "../../../shared/types/order.types";
+import { calculateCartItemTotal } from "../../../shared/utils/cart";
 
 type OrderType = "DELIVERY" | "PICKUP";
-
-type DeliveryArea = {
-  name: string;
-  fee: number;
-};
-
-const DELIVERY_AREAS: DeliveryArea[] = [
-  { name: "Kelebe Mubaraka", fee: 2500 },
-  { name: "Demo filling station", fee: 2500 },
-  { name: "GRA", fee: 2000 },
-  { name: "Oke goshen mallam Tope", fee: 2000 },
-  { name: "Ayekaale", fee: 3000 },
-  { name: "Elizabeth estate", fee: 3500 },
-  { name: "Ota ifun", fee: 2000 },
-  { name: "Sogbo area", fee: 1000 },
-  { name: "O & A", fee: 1000 },
-  { name: "Ibukun oluwa", fee: 1000 },
-  { name: "Philadai hostel", fee: 1000 },
-  { name: "Highlight hostel", fee: 1000 },
-  { name: "Vip lodge", fee: 1000 },
-  { name: "Jafariya area", fee: 1000 },
-  { name: "Akede yamodeen", fee: 1200 },
-  { name: "Akede powerline", fee: 1200 },
-  { name: "Akede housing estate", fee: 1500 },
-  { name: "Garage ilesa", fee: 1000 },
-  { name: "Fountain university", fee: 2000 },
-  { name: "Tiper garage", fee: 1700 },
-  { name: "Costain okebaale", fee: 1200 },
-  { name: "Gangaria side", fee: 1000 },
-  { name: "Lilad filling station area", fee: 800 },
-  { name: "Olorunkemi ", fee: 600 },
-  { name: "Sussy ", fee: 600 },
-  { name: "Deluxury hotel area", fee: 1000 },
-  { name: "Nipco okebaale ", fee: 700 },
-  { name: "Cele pick and pay area ", fee: 1300 },
-  { name: "Kings and Queen area ", fee: 1300 },
-  { name: "King phoebe ", fee: 1300 },
-  { name: "Federal hostel and Ayobami area ", fee: 1300 },
-  { name: "Theology, Havana, VIP", fee: 1200 },
-  { name: "Table Manner", fee: 1000 },
-  { name: "Abike Hostel", fee: 1000 },
-  { name: "Roya Crown Hostel", fee: 1000 },
-  { name: "Alpha Hostel", fee: 1000 },
-  { name: "Ajoke Hostel", fee: 1000 },
-  { name: "Prestige Hostel", fee: 1000 },
-  { name: "Lick sensation area", fee: 1000 },
-  { name: "Second gate area", fee: 1000 },
-  { name: "Small gate", fee: 1300 },
-  { name: "Osunlepo", fee: 1500 },
-  { name: "URP", fee: 1500 },
-];
 
 const Checkout = () => {
   const {
@@ -132,19 +83,18 @@ const Checkout = () => {
           orderType === "DELIVERY"
             ? `${customerInfo.address}, ${customerInfo.area}`
             : null,
+        deliveryFee,
         items: items.map((item) => ({
           foodId: item.id,
           foodName: item.name,
           quantity: item.quantity,
           unitPrice: item.price,
+          packagingFee: item.packagingFee,
         })),
       };
 
       const res = await api.post("/order", payload);
 
-      // ── Monnify returns a hosted checkout URL ──────────────────────────────
-      // The user picks card or bank transfer inside Monnify's own checkout UI.
-      // We just redirect them there.
       const { paymentLink } = res.data.data.data;
 
       if (!paymentLink) {
@@ -154,11 +104,11 @@ const Checkout = () => {
         return;
       }
 
-      // Clear cart before leaving — Monnify will redirect back to your
-      // callback URL (configured in Monnify dashboard) after payment.
+      // Clear cart before leaving — Paystack will redirect back to your
+      // callback URL (configured in Paystack dashboard) after payment.
       clearCart();
 
-      // Redirect to Monnify hosted checkout page.
+      // Redirect to paystack hosted checkout page.
       // User sees card / bank transfer / USSD options there.
       window.location.href = paymentLink;
     } catch (error: any) {
@@ -173,6 +123,7 @@ const Checkout = () => {
 
   const isCartEmpty = items.length === 0;
 
+  console.log("subtotal:", subtotal);
   return (
     <section className="bg-[#F7F3ED] min-h-screen py-16 px-5">
       <div className="max-w-6xl mx-auto">
@@ -181,7 +132,7 @@ const Checkout = () => {
           <h1 className="font-bold text-4xl">Complete Your Order</h1>
           <p className="text-gray-500 mt-3">
             Review your items, fill in your details, then pay securely via
-            Monnify.
+            Paystack.
           </p>
         </header>
 
@@ -320,9 +271,9 @@ const Checkout = () => {
             <div className="bg-white rounded-3xl p-6 border border-dashed border-gray-200">
               <p className="text-sm text-gray-500 leading-relaxed">
                 <span className="font-medium text-gray-700">
-                  Secure payment via Monnify.
+                  Secure payment via Paystack.
                 </span>{" "}
-                After placing your order you will be redirected to Monnify's
+                After placing your order you will be redirected to Paystack's
                 checkout page where you can pay with your debit card, bank
                 transfer, USSD, or phone number.
               </p>
@@ -334,19 +285,77 @@ const Checkout = () => {
             <h2 className="text-2xl mb-6">Order Summary</h2>
 
             {/* Item lines */}
-            <div className="space-y-2 mb-4">
-              {items.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex justify-between text-sm text-gray-600"
-                >
-                  <span>
-                    {item.name}{" "}
-                    <span className="text-gray-400">×{item.quantity}</span>
-                  </span>
-                  <span>₦{(item.price * item.quantity).toLocaleString()}</span>
-                </div>
-              ))}
+            <div className="space-y-3 mb-4">
+              {items.map((item) => {
+                const hasPackaging = item.requirePackaging;
+
+                return (
+                  <div
+                    key={item.cartId || item.id}
+                    className="border-b border-gray-100 pb-2 space-y-1"
+                  >
+                    {/* Food price */}
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>
+                        {item.name}
+                        <span className="text-gray-400 ml-1">
+                          ×{item.quantity}
+                        </span>
+                      </span>
+
+                      <span>
+                        ₦{(item.price * item.quantity).toLocaleString()}
+                      </span>
+                    </div>
+
+                    {/* Packaging fee */}
+                    {hasPackaging && (
+                      <div className="flex justify-between text-sm text-gray-500">
+                        <span>
+                          Takeaway Fee
+                          <span className="text-gray-400 ml-1">
+                            ×{item.quantity}
+                          </span>
+                        </span>
+
+                        <span>
+                          ₦
+                          {(item.packagingFee * item.quantity).toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Addons */}
+                    {item.addons?.length > 0 &&
+                      item.addons.map((addon) => (
+                        <div
+                          key={addon.id}
+                          className="flex justify-between text-xs text-gray-500 ml-2"
+                        >
+                          <span>
+                            + {addon.name}
+                            <span className="text-gray-400 ml-1">
+                              ×{item.quantity}
+                            </span>
+                          </span>
+
+                          <span>
+                            ₦{(addon.price * item.quantity).toLocaleString()}
+                          </span>
+                        </div>
+                      ))}
+
+                    {/* Final item total */}
+                    <div className="flex justify-between pt-1 font-medium text-gray-800">
+                      <span>Item Total</span>
+
+                      <span>
+                        ₦{calculateCartItemTotal(item).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             <div className="space-y-3 border-t pt-4">
@@ -379,7 +388,7 @@ const Checkout = () => {
             </button>
 
             <p className="text-xs text-center text-gray-400 mt-3">
-              You'll be redirected to Monnify to complete payment
+              You'll be redirected to Paystack to complete payment
             </p>
           </aside>
         </div>

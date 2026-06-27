@@ -27,6 +27,7 @@ const Header = () => {
       name: "Menu",
       path: "/menu",
     },
+
     {
       name: "About",
       path: "/about",
@@ -34,6 +35,10 @@ const Header = () => {
     {
       name: "Contact",
       path: "/contact",
+    },
+    {
+      name: "Track Order",
+      path: "/order",
     },
   ];
 

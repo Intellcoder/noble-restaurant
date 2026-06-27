@@ -13,6 +13,7 @@ import {
   ShoppingBag,
   XCircle,
 } from "lucide-react";
+import { api } from "../../../shared/api";
 
 type OrderItem = {
   id: string;
@@ -114,21 +115,6 @@ const statusSteps: {
   { key: "DELIVERED", label: "Delivered", icon: Package },
 ];
 
-const mockOrder: Order = {
-  id: "ord_1",
-  orderNumber: "ORD-38292",
-  phoneNumber: "07012062584",
-  deliveryAddress: "Osogbo, Fola Filling Station Area",
-  totalAmount: 5600,
-  paymentStatus: "PAID",
-  orderStatus: "PREPARING",
-  items: [
-    { id: "1", foodName: "Jollof Rice", quantity: 2, unitPrice: 1500 },
-    { id: "2", foodName: "Chicken", quantity: 1, unitPrice: 1800 },
-    { id: "3", foodName: "Coke", quantity: 2, unitPrice: 400 },
-  ],
-};
-
 // --- Status Badge ---
 const StatusBadge = ({ status }: { status: string }) => {
   const cfg = STATUS_CONFIG[status as StatusKey] ?? {
@@ -174,15 +160,20 @@ const TrackOrder = () => {
 
     try {
       setLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const res = await api.get(`/order/track/${orderNumber}`);
 
-      if (orderNumber.toUpperCase() === mockOrder.orderNumber) {
-        setOrder(mockOrder);
-        toast.success("Order found");
-      } else {
-        toast.error("Order not found");
-        setOrder(null);
+      console.log("response:", res.data);
+
+      if (res.data.success) {
+        setOrder(res.data.order);
       }
+      // if (orderNumber.toUpperCase() === mockOrder.orderNumber) {
+      //   setOrder(mockOrder);
+      //   toast.success("Order found");
+      // } else {
+      //   toast.error("Order not found");
+      //   setOrder(null);
+      // }
     } catch {
       toast.error("Something went wrong");
     } finally {
@@ -212,7 +203,7 @@ const TrackOrder = () => {
               value={orderNumber}
               onChange={(e) => setOrderNumber(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleTrack()}
-              placeholder="e.g. ORD-38292"
+              placeholder="e.g. NR-PF4gkr"
               className="flex-1 border rounded-xl px-4 py-3 outline-none focus:border-red-500 text-sm"
             />
             <button

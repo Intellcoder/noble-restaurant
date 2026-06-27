@@ -5,6 +5,7 @@ import {
   ShoppingCart,
   CreditCard,
   CalendarDays,
+  Truck,
 } from "lucide-react";
 
 export const menuItems = [
@@ -37,6 +38,11 @@ export const menuItems = [
         path: "/admin/combos",
       },
       {
+        name: "Riders",
+        icon: Truck,
+        path: "/admin/riders",
+      },
+      {
         name: "Verify Payments",
         icon: CreditCard,
         path: "/admin/payments",
@@ -48,35 +54,4 @@ export const menuItems = [
       },
     ],
   },
-
-  //   {
-  //     title: "Business",
-  //     items: [
-  //       {
-  //         name: "Customers",
-  //         icon: Users,
-  //         path: "/admin/customers",
-  //       },
-  //       {
-  //         name: "Reports",
-  //         icon: BarChart3,
-  //         path: "/admin/reports",
-  //       },
-  //       {
-  //         name: "Reviews",
-  //         icon: Star,
-  //         path: "/admin/reviews",
-  //       },
-  //       {
-  //         name: "Promotions",
-  //         icon: Megaphone,
-  //         path: "/admin/promotions",
-  //       },
-  //       {
-  //         name: "Settings",
-  //         icon: Settings,
-  //         path: "/admin/settings",
-  //       },
-  //     ],
-  //   },
 ];

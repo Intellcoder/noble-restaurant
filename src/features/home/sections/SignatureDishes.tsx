@@ -9,6 +9,7 @@ type Food = {
   imageUrl?: string;
   price: number;
   badge?: string;
+  requirePackaging: boolean;
 };
 
 const SignatureDishes = () => {
@@ -74,7 +75,7 @@ const SignatureDishes = () => {
                 }
                 price={food.price}
                 badge={food.badge}
-                onAddToCart={() => console.log("Added:", food.name)}
+                requirePackaging={food.requirePackaging}
               />
             ))}
           </div>

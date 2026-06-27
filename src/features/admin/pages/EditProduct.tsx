@@ -8,6 +8,7 @@ type ProductForm = {
   description: string;
   price: number;
   categoryId: string;
+  requirePackaging: boolean;
 };
 
 type Category = {
@@ -15,57 +16,66 @@ type Category = {
   name: string;
 };
 
+const initialForm: ProductForm = {
+  name: "",
+  description: "",
+  price: 0,
+  categoryId: "",
+  requirePackaging: false,
+};
+
 const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
 
   const [categories, setCategories] = useState<Category[]>([]);
-
-  const [imagePreview, setImagePreview] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState("");
 
-  const [formData, setFormData] = useState<ProductForm>({
-    name: "",
-    description: "",
-    price: 0,
-    categoryId: "",
-  });
+  const [formData, setFormData] = useState<ProductForm>(initialForm);
 
   useEffect(() => {
-    fetchProduct();
-    fetchCategories();
-  }, []);
+    if (!id) return;
+
+    loadInitialData();
+  }, [id]);
+
+  const loadInitialData = async () => {
+    try {
+      await Promise.all([fetchProduct(), fetchCategories()]);
+    } finally {
+      setIsFetching(false);
+    }
+  };
 
   const fetchProduct = async () => {
     try {
-      const res = await api.get(`/food/${id}`);
+      const { data } = await api.get(`/food/${id}`);
+      const product = data.data;
 
-      const product = res.data.data;
-
+      console.log("res:", data);
       setFormData({
-        name: product.name || "",
-        description: product.description || "",
-        price: product.price || 0,
-        categoryId: product.categoryId || "",
+        name: product.name ?? "",
+        description: product.description ?? "",
+        price: product.price ?? 0,
+        categoryId: product.categoryId ?? "",
+        requirePackaging: product.requirePackaging ?? false,
       });
 
-      setImagePreview(product.image);
-    } catch {
+      setImagePreview(product.image ?? "");
+    } catch (error) {
       toast.error("Failed to fetch product");
-    } finally {
-      setFetching(false);
     }
   };
 
   const fetchCategories = async () => {
     try {
-      const res = await api.get("/category");
-
-      setCategories(res.data.data);
-    } catch {
+      const { data } = await api.get("/category");
+      setCategories(data.data);
+    } catch (error) {
       toast.error("Failed to fetch categories");
     }
   };
@@ -77,9 +87,19 @@ const EditProduct = () => {
   ) => {
     const { name, value } = e.target;
 
+    let parsedValue: string | number | boolean = value;
+
+    if (name === "price") {
+      parsedValue = Number(value);
+    }
+
+    if (name === "requirePackaging") {
+      parsedValue = value === "true";
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "price" ? Number(value) : value,
+      [name]: parsedValue,
     }));
   };
 
@@ -89,51 +109,49 @@ const EditProduct = () => {
     if (!file) return;
 
     setSelectedImage(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
 
-    const previewUrl = URL.createObjectURL(file);
+  const buildFormData = () => {
+    const payload = new FormData();
 
-    setImagePreview(previewUrl);
+    payload.append("name", formData.name);
+    payload.append("description", formData.description);
+    payload.append("price", String(formData.price));
+    payload.append("categoryId", formData.categoryId);
+    payload.append("requirePackaging", String(formData.requirePackaging));
+
+    if (selectedImage) {
+      payload.append("image", selectedImage);
+    }
+
+    return payload;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      setLoading(true);
+      setIsSubmitting(true);
 
-      const payload = new FormData();
-
-      payload.append("name", formData.name);
-
-      payload.append("description", formData.description);
-
-      payload.append("price", formData.price.toString());
-
-      payload.append("categoryId", formData.categoryId);
-
-      if (selectedImage) {
-        payload.append("image", selectedImage);
-      }
-
-      await api.put(`/food/${id}`, payload, {
+      await api.put(`/food/${id}`, buildFormData(), {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
       toast.success("Product updated successfully");
-
       navigate("/admin/products");
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Update failed");
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  if (fetching) {
+  if (isFetching) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex items-center justify-center h-screen">
         Loading...
       </div>
     );
@@ -171,6 +189,18 @@ const EditProduct = () => {
           className="w-full border p-3 rounded"
         />
 
+        {/* Require Packaging */}
+        <select
+          name="requirePackaging"
+          value={String(formData.requirePackaging)}
+          onChange={handleChange}
+          className="w-full border p-3 rounded"
+        >
+          <option value="false">No Packaging Required</option>
+          <option value="true">Requires Packaging</option>
+        </select>
+
+        {/* Category */}
         <select
           name="categoryId"
           value={formData.categoryId}
@@ -186,6 +216,7 @@ const EditProduct = () => {
           ))}
         </select>
 
+        {/* Image */}
         <div>
           <label className="block mb-2">Product Image</label>
 
@@ -202,10 +233,10 @@ const EditProduct = () => {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={isSubmitting}
           className="w-full bg-black text-white py-3 rounded-lg"
         >
-          {loading ? "Updating..." : "Update Product"}
+          {isSubmitting ? "Updating..." : "Update Product"}
         </button>
       </form>
     </div>

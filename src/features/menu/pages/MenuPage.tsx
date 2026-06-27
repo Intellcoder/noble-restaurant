@@ -12,6 +12,7 @@ type Food = {
   price: number;
   badge?: string;
   description: string;
+  requirePackaging: boolean;
 };
 
 type Category = {
@@ -154,6 +155,7 @@ const MenuPage = () => {
                 }
                 price={food.price}
                 badge={food.badge}
+                requirePackaging={food.requirePackaging}
                 description={food.description}
               />
             ))}
